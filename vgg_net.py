@@ -7,12 +7,8 @@ from keras.optimizers import SGD
 from keras.preprocessing.image import ImageDataGenerator
 import os
 from keras.models import load_model
-<<<<<<< HEAD
 from callbacks import *
-=======
 from common import *
->>>>>>> 34259a421820887842844b949c1bd0e4fd8da87e
-
 
 class NN(object):
     def __init__(self,cached_model= None):
