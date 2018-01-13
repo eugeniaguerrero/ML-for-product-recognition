@@ -7,6 +7,7 @@ from keras.optimizers import SGD
 from keras.preprocessing.image import ImageDataGenerator
 import os
 from keras.models import load_model
+from callbacks import *
 
 
 class NN(object):
@@ -33,7 +34,7 @@ class NN(object):
             self.model = load_model(cached_model)
 
         sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-        self.model.compile(loss='categorical_crossentropy', optimizer=sgd)
+        self.model.compile(loss='categorical_crossentropy', optimizer=sgd,metrics = ['accuracy'])
 
     def train(self,directory_,model_name):
         train_datagen = ImageDataGenerator(
@@ -43,13 +44,14 @@ class NN(object):
             horizontal_flip=True)
 
         test_datagen = ImageDataGenerator(rescale=1. / 255)
+        calls_ = logs()
 
         train_generator = train_datagen.flow_from_directory(
             directory_,
             target_size=(100, 100),
             batch_size=32,
             class_mode="categorical")  # CHANGE THIS!!!
-        self.model.fit_generator(train_generator, epochs=10)
+        self.model.fit_generator(train_generator, callbacks=[calls_.json_logging_callback ],epochs=10)
 
         current_directory = os.path.dirname(os.path.abspath(__file__))
         self.model.save(os.path.join(current_directory, os.path.pardir, "models", model_name))
