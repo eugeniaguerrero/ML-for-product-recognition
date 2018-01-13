@@ -4,7 +4,7 @@ import sys
 import shutil
 
 percent = 0.9
-dir = "C:\\Users\\GC\\Desktop\\test\\venv\\Include"
+dir = os.getcwd()
 source = "\\product-image-dataset"
 train = "\\training_data"
 test = "\\test_data"
