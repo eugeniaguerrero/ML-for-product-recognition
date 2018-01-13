@@ -6,7 +6,6 @@
 3. `git status`
 4. git `add <files>` or `git add .`
 
-<<<<<<< HEAD
 ### Creating a branch
 `git checkout -b <name of branch>`
 
