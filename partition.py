@@ -11,25 +11,35 @@ import sys
 import shutil
 
 # Set percentage of images for training (rest are test set)
-percent = 0.9
+test_pct = 0.1
+validate_pct = 0.1
+train_pct = 1 - validate_pct - test_pct
 
 source = "\\product-image-dataset"
 train = "\\training_data"
+validate = "\\validation_data"
 test = "\\test_data"
 dir = os.getcwd()
 
-os.makedirs(dir+train)
-os.makedirs(dir+test)
+os.makedirs(dir + test)
+os.makedirs(dir + validate)
+os.makedirs(dir + train)
 
 #Loop subdirectories
+n_test = 0
+n_validate = 0
+n_train = 0
+total = 0
 for sub in os.listdir(dir+source):
-    i=0
-    pictures = []
+
     subdir= "\\" + sub
     os.makedirs(dir + test + subdir)
+    os.makedirs(dir + validate + subdir)
     os.makedirs(dir + train + subdir)
 
     #Count and create list of files in subdir
+    pictures = []
+    i = 0
     for file in os.listdir(dir + source + subdir):
         pictures.append(file)
         i=i+1
@@ -39,20 +49,46 @@ for sub in os.listdir(dir+source):
 
     #Split random list into training and test
     j=0
-    training_set = []
-    test_set = []
-    while(j < i*percent):
-        training_set.append(pictures[j])
-        j= j+1
 
-    while(j < i):
+    test_set = []
+    while (j < i * test_pct):
         test_set.append(pictures[j])
-        j=j+1
+        j = j + 1
+
+    validate_set = []
+    while(j < i*(test_pct+validate_pct)):
+        validate_set.append(pictures[j])
+        j = j+1
+
+    training_set = []
+    while(j < i):
+        training_set.append(pictures[j])
+        j = j+1
 
     #Copy to destination folders
     path = dir + source + subdir + "\\"
-    for pic in training_set:
-        shutil.copy(path + pic, dir + train + subdir)
+
 
     for pic in test_set:
         shutil.copy(path + pic, dir + test + subdir)
+        n_test = n_test+1
+
+
+    for pic in validate_set:
+        shutil.copy(path + pic, dir + validate + subdir)
+        n_validate = n_validate + 1
+
+
+    for pic in training_set:
+        shutil.copy(path + pic, dir + train + subdir)
+        n_train = n_train + 1
+
+    #update running total
+    total = total + i
+
+print("There are {} test data images".format(n_test))
+print("There are {} validation data images".format(n_validate))
+print("There are {} training images".format(n_train))
+print("There were {} images in the original data".format(total))
+
+
