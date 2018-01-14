@@ -7,8 +7,9 @@ from keras.optimizers import SGD
 from keras.preprocessing.image import ImageDataGenerator
 import os
 from keras.models import load_model
+from callbacks import *
 from common import *
-
+from folder_manipulation import *
 
 class NN(object):
     def __init__(self,cached_model= None):
@@ -34,7 +35,8 @@ class NN(object):
             self.model = load_model(cached_model)
 
         sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-        self.model.compile(loss='categorical_crossentropy', optimizer=sgd,metrics=['accuracy'])
+        self.model.compile(loss='categorical_crossentropy', optimizer=sgd,metrics = ['accuracy'])
+
 
     def train(self,train_directory_, validation_directory_,model_name,epochs):
         datagen = ImageDataGenerator(
@@ -43,7 +45,8 @@ class NN(object):
             zoom_range=0.2,
             horizontal_flip=True)
 
-        datagen = ImageDataGenerator(rescale=1. / 255)
+        test_datagen = ImageDataGenerator(rescale=1. / 255)
+        calls_ = logs()
 
         train_generator = datagen.flow_from_directory(
             train_directory_,
@@ -57,12 +60,28 @@ class NN(object):
             batch_size=32,
             class_mode="categorical")  # CHANGE THIS!!!
 
-
-        self.model.fit_generator(generator=train_generator, validation_data=validate_generator, epochs=10)
+        self.model.fit_generator(train_generator, callbacks=[calls_.json_logging_callback,
+                                                             calls_.slack_callback,
+                                                             keras.callbacks.TerminateOnNaN(),
+                                                             keras.callbacks.ModelCheckpoint(filepath='./checkpoints/intermediate.hdf5',
+                                                                                             monitor='val_loss',
+                                                                                             verbose=0,
+                                                                                             save_best_only=False,
+                                                                                             save_weights_only=False,
+                                                                                             mode='auto', period=1),
+                                                             keras.callbacks.TensorBoard(log_dir='./logs',
+                                                                                         histogram_freq=0,
+                                                                                         batch_size=64,
+                                                                                         write_graph=True,
+                                                                                         write_grads=False,
+                                                                                         write_images=True,
+                                                                                         embeddings_freq=0,
+                                                                                         embeddings_layer_names=None,
+                                                                                         embeddings_metadata=None)],epochs=10)
 
         current_directory = os.path.dirname(os.path.abspath(__file__))
         print("Model saved to " + os.path.join(current_directory, os.path.pardir, "models", model_name + '.hdf5'))
-        self.model.save("models/" + model_name + '.hdf5')
+        self.model.save(os.path.join("models",str(model_name + '.hdf5')))
 
     def predict(self,input_data):
         """
@@ -80,32 +99,11 @@ class NN(object):
 
     def debug(self,directory_):
 
-        folders = os.listdir(directory_)
-        folder_present = False
-
-        for d in folders:
-            if os.path.isdir(os.path.join(directory_, d)):
-                folder = d
-                folder_present = True
-                break
-        if not folder_present:
-            print("Could not find any folders/categories!")
-        files = os.listdir(os.path.join(directory_, d))
-
-        image_present = False
-
-        for file in files:
-            if file.endswith('.jpg') or file.endswith('.png'):
-                image = file
-                image_present = True
-                break
-        if not image_present:
-            print("Could not find any Images!")
-        filepath = directory_ + '/' + folder + '/' + image
-        import cv2
-        img = cv2.imread(filepath)
-        resized_image = np.expand_dims(cv2.resize(img, (IM_HEIGHT, IM_WIDTH)),axis = 0)
-        print(resized_image.shape)
+        #Test 1 check if untrained model returns uniform predictions
+        folders = get_folders(directory_)
+        image_list = get_image_names(os.path.join(directory_, folders[0]))
+        filepath = os.path.join(directory_,folders[0],image_list[0])
+        resized_image = get_image(filepath)
         predictions = self.predict(resized_image)
 
         if np.max(predictions) - np.min(predictions) > 0.1:
@@ -114,7 +112,32 @@ class NN(object):
             print("Starting without a pre-trained model")
         print("Initial predictions are:")
         print(predictions)
+
+        #Test 2 see if accuracy goes very quickly to 1 on 1 image
         self.train(directory_,'debugging_model',10)
 
+    def find_incorrect_classifications(self,directory_):
+        incpred = "incorrect_predictions"
+        if not os.path.exists(incpred):
+            os.makedirs(incpred)
+
+        # Test 1 check if untrained model returns uniform predictions
+        folders = get_folders(directory_)
+        category = 0
+        import shutil
+        for folder in folders:
+
+            if not os.path.exists(os.path.join(incpred,folder)):
+                os.makedirs(os.path.join(incpred,folder))
+
+            image_list = get_image_names(os.path.join(directory_, folder))
+            for image in image_list:
+                filepath = os.path.join(directory_,folder,image)
+                resized_image = get_image(filepath)
+                predictions = self.predict(resized_image)
+
+                if np.argmax(predictions) != category:
+                    fileto = os.path.join(incpred,folder,image)
+                    shutil.copyfile(filepath,fileto)
 
 
