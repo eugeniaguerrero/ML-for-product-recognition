@@ -8,24 +8,25 @@ def get_folders(directory_):
     folders = []
     for d in items:
         if os.path.isdir(os.path.join(directory_, d)):
-            folders = folders.append(d)
+            folders.append(d)
             folder_present = True
 
     if not folder_present:
         print("Could not find any folders/categories!")
-    return folders
+    return sorted(folders)
 
 def get_image_names(directory_):
-    files = os.listdir()
+    files = os.listdir(directory_)
     image_present = False
-
+    images = []
     for file in files:
         if file.endswith('.jpg') or file.endswith('.png'):
-            image = file
+            images.append(file)
             image_present = True
-            break
+
     if not image_present:
         print("Could not find any Images!")
+    return images
 
 def get_image(filepath):
     import cv2

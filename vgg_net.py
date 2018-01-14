@@ -54,7 +54,7 @@ class NN(object):
 
         current_directory = os.path.dirname(os.path.abspath(__file__))
         print("Model saved to " + os.path.join(current_directory, os.path.pardir, "models", model_name + '.hdf5'))
-        self.model.save("models/" + model_name + '.hdf5')
+        self.model.save(os.path.join("models",str(model_name + '.hdf5')))
 
     def predict(self,input_data):
         """
@@ -75,7 +75,7 @@ class NN(object):
         #Test 1 check if untrained model returns uniform predictions
         folders = get_folders(directory_)
         image_list = get_image_names(os.path.join(directory_, folders[0]))
-        filepath = directory_ + '/' + folders[0] + '/' + image_list[0]
+        filepath = os.path.join(directory_,folders[0],image_list[0])
         resized_image = get_image(filepath)
         predictions = self.predict(resized_image)
 
@@ -98,21 +98,19 @@ class NN(object):
         folders = get_folders(directory_)
         category = 0
         import shutil
-
         for folder in folders:
 
-            if not os.path.exists(incpred + '/' + folder):
-                os.makedirs(incpred + '/' + folder)
+            if not os.path.exists(os.path.join(incpred,folder)):
+                os.makedirs(os.path.join(incpred,folder))
 
-            image_list = get_image_names(os.path.join(directory_, folders))
-
+            image_list = get_image_names(os.path.join(directory_, folder))
             for image in image_list:
-                filepath = directory_ + '/' + folders + '/' + image
+                filepath = os.path.join(directory_,folder,image)
                 resized_image = get_image(filepath)
                 predictions = self.predict(resized_image)
 
-                if np.maxindex(predictions) != category:
-                    fileto = incpred + '/' + folders + '/' + image
+                if np.argmax(predictions) != category:
+                    fileto = os.path.join(incpred,folder,image)
                     shutil.copyfile(filepath,fileto)
 
 
