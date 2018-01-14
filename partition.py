@@ -1,46 +1,58 @@
+'''
+Splits a folder with source\subdirs\images into:
+    training_data\subdirs\images
+    test_data\subdirs\images
+
+'percent' is the proportion of randomly selected images for the training set.
+'''
 import os
 import random
 import sys
 import shutil
 
+# Set percentage of images for training (rest are test set)
 percent = 0.9
-dir = os.getcwd()
+
 source = "\\product-image-dataset"
 train = "\\training_data"
 test = "\\test_data"
+dir = os.getcwd()
 
-#create the destination folders
 os.makedirs(dir+train)
 os.makedirs(dir+test)
 
-#loop through
-for d in os.listdir(dir+source):
+#Loop subdirectories
+for sub in os.listdir(dir+source):
     i=0
     pictures = []
-    dir_name = "\\" + d
-    os.makedirs(dir + test + dir_name)
-    os.makedirs(dir + train + dir_name)
+    subdir= "\\" + sub
+    os.makedirs(dir + test + subdir)
+    os.makedirs(dir + train + subdir)
 
-    for file in os.listdir(dir + source + dir_name):
+    #Count and create list of files in subdir
+    for file in os.listdir(dir + source + subdir):
         pictures.append(file)
         i=i+1
 
-    #make random list
+    #Shuffle list to randomise
     random.shuffle(pictures)
 
+    #Split random list into training and test
     j=0
     training_set = []
     test_set = []
     while(j < i*percent):
         training_set.append(pictures[j])
-        j=j+1
+        j= j+1
 
     while(j < i):
         test_set.append(pictures[j])
         j=j+1
 
+    #Copy to destination folders
+    path = dir + source + subdir + "\\"
     for pic in training_set:
-        shutil.copy(dir+source+dir_name+ "\\" + pic, dir + train + dir_name)
+        shutil.copy(path + pic, dir + train + subdir)
 
     for pic in test_set:
-        shutil.copy(dir+source+dir_name+ "\\" + pic, dir + test + dir_name)
+        shutil.copy(path + pic, dir + test + subdir)
