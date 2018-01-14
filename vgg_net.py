@@ -52,7 +52,24 @@ class NN(object):
             batch_size=32,
             class_mode="categorical")  # CHANGE THIS!!!
 
-        self.model.fit_generator(train_generator, callbacks=[calls_.json_logging_callback,calls_.slack_callback],epochs=10)
+        self.model.fit_generator(train_generator, callbacks=[calls_.json_logging_callback,
+                                                             calls_.slack_callback,
+                                                             keras.callbacks.TerminateOnNaN(),
+                                                             keras.callbacks.ModelCheckpoint(filepath='./checkpoints/intermediate.hdf5',
+                                                                                             monitor='val_loss',
+                                                                                             verbose=0,
+                                                                                             save_best_only=False,
+                                                                                             save_weights_only=False,
+                                                                                             mode='auto', period=1),
+                                                             keras.callbacks.TensorBoard(log_dir='./logs',
+                                                                                         histogram_freq=0,
+                                                                                         batch_size=64,
+                                                                                         write_graph=True,
+                                                                                         write_grads=False,
+                                                                                         write_images=True,
+                                                                                         embeddings_freq=0,
+                                                                                         embeddings_layer_names=None,
+                                                                                         embeddings_metadata=None)],epochs=10)
 
 
         current_directory = os.path.dirname(os.path.abspath(__file__))

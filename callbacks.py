@@ -24,12 +24,28 @@ class logs(object):
         )
 
         self.slack_callback = LambdaCallback(
-            on_train_begin=lambda logs: self.message(logs)
+            on_train_begin=lambda logs: self.start_of_training(logs),
+            on_train_end = lambda logs: self.end_of_training(logs)
+
         )
 
 
-    def message(self,logs):
+    def start_of_training(self,logs):
         slack_data = {'text': "The wolf has started to prowl"}
+        webhook_url = 'https://hooks.slack.com/services/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'
+
+        response = requests.post(
+            webhook_url, data=json.dumps(slack_data),
+            headers={'Content-Type': 'application/json'}
+        )
+        if response.status_code != 200:
+            raise ValueError(
+                'Request to slack returned an error %s, the response is:\n%s'
+                % (response.status_code, response.text)
+            )
+
+    def end_of_training(self, logs):
+        slack_data = {'text': "The wolf has ended its hunt"}
         webhook_url = 'https://hooks.slack.com/services/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'
 
         response = requests.post(
