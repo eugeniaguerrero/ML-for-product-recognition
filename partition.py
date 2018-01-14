@@ -15,32 +15,31 @@ test_pct = 0.1
 validate_pct = 0.1
 train_pct = 1 - validate_pct - test_pct
 
-source = "\\product-image-dataset"
-train = "\\training_data"
-validate = "\\validation_data"
-test = "\\test_data"
+source = "product-image-dataset"
+train = "training_data"
+validate = "validation_data"
+test = "test_data"
 dir = os.getcwd()
 
-os.makedirs(dir + test)
-os.makedirs(dir + validate)
-os.makedirs(dir + train)
+os.makedirs(os.path.join(dir, test))
+os.makedirs(os.path.join(dir, validate))
+os.makedirs(os.path.join(dir, train))
 
 #Loop subdirectories
 n_test = 0
 n_validate = 0
 n_train = 0
 total = 0
-for sub in os.listdir(dir+source):
+for subdir in os.listdir(os.path.join(dir,source)):
 
-    subdir= "\\" + sub
-    os.makedirs(dir + test + subdir)
-    os.makedirs(dir + validate + subdir)
-    os.makedirs(dir + train + subdir)
+    os.makedirs(os.path.join(dir, test, subdir))
+    os.makedirs(os.path.join(dir, validate, subdir))
+    os.makedirs(os.path.join(dir, train, subdir))
 
     #Count and create list of files in subdir
     pictures = []
     i = 0
-    for file in os.listdir(dir + source + subdir):
+    for file in os.listdir(os.path.join(dir, source, subdir)):
         pictures.append(file)
         i=i+1
 
@@ -66,21 +65,18 @@ for sub in os.listdir(dir+source):
         j = j+1
 
     #Copy to destination folders
-    path = dir + source + subdir + "\\"
-
+    path = os.path.join(dir, source, subdir)
 
     for pic in test_set:
-        shutil.copy(path + pic, dir + test + subdir)
+        shutil.copy(os.path.join(path, pic), os.path.join(dir, test, subdir))
         n_test = n_test+1
 
-
     for pic in validate_set:
-        shutil.copy(path + pic, dir + validate + subdir)
+        shutil.copy(os.path.join(path, pic), os.path.join(dir, validate, subdir))
         n_validate = n_validate + 1
 
-
     for pic in training_set:
-        shutil.copy(path + pic, dir + train + subdir)
+        shutil.copy(os.path.join(path, pic), os.path.join(dir, train, subdir))
         n_train = n_train + 1
 
     #update running total
