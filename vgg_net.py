@@ -52,7 +52,7 @@ class NN(object):
             batch_size=32,
             class_mode="categorical")  # CHANGE THIS!!!
 
-        self.model.fit_generator(train_generator, callbacks=[calls_.json_logging_callback ],epochs=10)
+        self.model.fit_generator(train_generator, callbacks=[calls_.json_logging_callback,calls_.slack_callback],epochs=10)
 
 
         current_directory = os.path.dirname(os.path.abspath(__file__))
