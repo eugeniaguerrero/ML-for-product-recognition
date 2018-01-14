@@ -2,6 +2,8 @@ import keras
 from keras.callbacks import LambdaCallback
 import json
 import requests
+from common import NUMBER_EPOCHS
+from math import ceil
 
 
 class logs(object):
@@ -13,11 +15,10 @@ class logs(object):
         # Stream the epoch loss to a file in JSON format. The file content
         # is not well-formed JSON but rather has a JSON object per line.
 
-
+        self.counter = 0
 
         self.json_log = open('loss_log.json', mode='wt', buffering=1)
         self.json_logging_callback = LambdaCallback(
-
             on_epoch_end=lambda epoch, logs: self.json_log.write(
                 json.dumps({'epoch': epoch, 'loss': logs['loss'], 'accuracy': logs['acc']}) + '\n'),
             on_train_end=lambda logs: self.json_log.close()
@@ -25,7 +26,8 @@ class logs(object):
 
         self.slack_callback = LambdaCallback(
             on_train_begin=lambda logs: self.start_of_training(logs),
-            on_train_end = lambda logs: self.end_of_training(logs)
+            on_train_end=lambda logs: self.end_of_training(logs),
+            on_epoch_end=lambda epoch,logs: self.update_counter(epoch,logs)
 
         )
 
@@ -43,6 +45,47 @@ class logs(object):
                 'Request to slack returned an error %s, the response is:\n%s'
                 % (response.status_code, response.text)
             )
+
+    def update_counter(self,epoch,logs):
+        self.counter += 1
+        values_to_add = 'Epoch: ' + str(epoch+1) + '\nLoss: ' + str(logs['loss'])+ '\nAccuracy: ' + str(logs['acc'])
+        percentage = str(self.counter/NUMBER_EPOCHS * 100)
+        title_string = percentage + str('% [')
+        for i in range(round(self.counter/NUMBER_EPOCHS * 10)):
+            title_string = title_string + '='
+        title_string = title_string + '>'
+        for i in range(10-round(self.counter/NUMBER_EPOCHS * 10)):
+            title_string = title_string + '_'
+        title_string = title_string + ']'
+
+        slack_data = {
+            "fallback": " ",
+            "fields": [
+                {
+                    "title": title_string,
+                    "value": {'epoch': values_to_add}
+                }
+            ]
+        }
+        webhook_url = 'https://hooks.slack.com/services/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'
+
+
+        print(self.counter)
+        print("The percentage is " + percentage)
+        print("The modulus is " + str(self.counter % ceil(NUMBER_EPOCHS/20)))
+
+        if self.counter % ceil(NUMBER_EPOCHS/20) == 0:
+            response = requests.post(
+                webhook_url, data=json.dumps(slack_data),
+                headers={'Content-Type': 'application/json'}
+            )
+            if response.status_code != 200:
+                raise ValueError(
+                    'Request to slack returned an error %s, the response is:\n%s'
+                    % (response.status_code, response.text)
+                )
+
+
 
     def end_of_training(self, logs):
         slack_data = {'text': "The wolf has ended its hunt"}
