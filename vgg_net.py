@@ -36,8 +36,8 @@ class NN(object):
         sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
         self.model.compile(loss='categorical_crossentropy', optimizer=sgd,metrics=['accuracy'])
 
-    def train(self,directory_,model_name,epochs):
-        train_datagen = ImageDataGenerator(
+    def train(self,train_directory_, validation_directory_,model_name,epochs):
+        datagen = ImageDataGenerator(
             rescale=1. / 255,
             shear_range=0.2,
             zoom_range=0.2,
