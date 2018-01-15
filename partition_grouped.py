@@ -1,23 +1,29 @@
 '''
 Splits a folder with source\subdirs\images into:
-    training_data\subdirs\images
     test_data\subdirs\images
+    validation_data\subdirs\images
+    training_data\subdirs\images
 
-'percent' is the proportion of randomly selected images for the training set.
+Images are grouped according to their timestamps e.g.
+file name '5000169217429_2017-06-24_13.46.42.629_p_049.jpg'
+has time stamp: '2017-06-24_13.46.42.629'
+
+The order of the groups is shuffled and then the groups are copied into
+the test, validation and training folders according the the ratios specified.
+
 '''
 import os
 import random
 import sys
 import shutil
 
-def get_substring(filename):
-
+# get_timestamp returns the time stamp substring from the file name
+def get_timestamp(filename):
     start = filename.find('_') + 1
     end = filename.rfind('_') - 2
-
     return filename[start:end]
 
-# Set percentage of images for training (rest are test set)
+# Set percentage of images for testing and validation (remainder is training set)
 test_pct = 0.1
 validate_pct = 0.1
 train_pct = 1 - validate_pct - test_pct
@@ -28,26 +34,42 @@ validate = "validation_data"
 test = "test_data"
 dir = os.getcwd()
 
-#os.makedirs(os.path.join(dir, test))
-#os.makedirs(os.path.join(dir, validate))
-#os.makedirs(os.path.join(dir, train))
+source_dir = os.path.join(dir, source)
+test_dir = os.path.join(dir, test)
+validate_dir = os.path.join(dir, validate)
+train_dir = os.path.join(dir, train)
 
+# Delete directories if they already exist
+for d in [test_dir, validate_dir, train_dir]:
+    if os.path.exists(d):
+        shutil.rmtree(d)
 
-#Loop subdirectories
-for subdir in os.listdir(os.path.join(dir,source)):
-    #os.makedirs(os.path.join(dir, test, subdir))
-    #os.makedirs(os.path.join(dir, validate, subdir))
-    #os.makedirs(os.path.join(dir, train, subdir))
+# Make new destination directories
+os.makedirs(test_dir)
+os.makedirs(validate_dir)
+os.makedirs(train_dir)
 
+# Loop through the subdirectories of the source data (i.e image class folders)
+for subdir in os.listdir(source_dir):
+
+    # Make the corresponding subdirectories in each of the destination directories
+    os.makedirs(os.path.join(test_dir, subdir))
+    os.makedirs(os.path.join(validate_dir, subdir))
+    os.makedirs(os.path.join(train_dir, subdir))
+
+    # Loop through the image files in a subdirectory
     stamps = {}
     files = {}
-    for f in os.listdir(os.path.join(dir, source, subdir)):
+    for f in os.listdir(os.path.join(source_dir, subdir)):
 
-        time_stamp = get_substring(f)
-        if stamps.haskey(time_stamp):
-            group = stamps(time_stamp)
+        time_stamp = get_timestamp(f)
+        # If the time stamp already exists lookup the group number and add it to the files dictionary
+        if time_stamp in stamps:
+            group = stamps[time_stamp]
             files[f] = group
 
+        # If it does not exist add it to the stamps dictionary with an incremented group number
+        # Add the file the the files dictionary with the new group number
         else:
             if stamps == {}:
                 new_group = 0
@@ -57,28 +79,28 @@ for subdir in os.listdir(os.path.join(dir,source)):
             stamps[time_stamp] = new_group
             files[f] = new_group
 
-    #Shuffle list to randomise
-    n_groups = max(stamps.values)
-    groups = list(range(0, n_groups))
+    #Make a list from 0 to n_groups and randomise the order
+    n_groups = max(stamps.values())
+    groups = list(range(0, n_groups+1))
     random.shuffle(groups)
 
-    #Split random list into training and test
-    path = os.path.join(dir, source, subdir)
+    #Split random list into test, validation and training directories
+    path = os.path.join(source_dir, subdir)
     j=0
     while(j < (n_groups*test_pct)):
-        for filename in files:
-            if files[filename] == groups[j]:
-                shutil.copy(os.path.join(path, filename), os.path.join(dir, test, subdir))
+        for file_name in files:
+            if files[file_name] == groups[j]:
+                shutil.copy(os.path.join(path, file_name), os.path.join(test_dir, subdir))
         j+=1
 
     while(j <  n_groups*(test_pct+validate_pct)):
-        for filename in files:
-            if files[filename] == groups[j]:
-                shutil.copy(os.path.join(path, filename), os.path.join(dir, validate, subdir))
+        for file_name in files:
+            if files[file_name] == groups[j]:
+                shutil.copy(os.path.join(path, file_name), os.path.join(validate_dir, subdir))
         j+=1
 
-    while(j < n_groups):
-        for filename in files:
-            if files[filename] == groups[j]:
-                shutil.copy(os.path.join(path, filename), os.path.join(dir, train, subdir))
+    while(j <= n_groups):
+        for file_name in files:
+            if files[file_name] == groups[j]:
+                shutil.copy(os.path.join(path, file_name), os.path.join(train_dir, subdir))
         j+=1
