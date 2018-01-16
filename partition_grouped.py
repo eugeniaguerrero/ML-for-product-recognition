@@ -39,18 +39,18 @@ test_dir = os.path.join(dir, test)
 validate_dir = os.path.join(dir, validate)
 train_dir = os.path.join(dir, train)
 
-# Delete directories if they already exist
+# Delete directories if they already exist, and make new ones
 for d in [test_dir, validate_dir, train_dir]:
     if os.path.exists(d):
         shutil.rmtree(d)
-
-# Make new destination directories
-os.makedirs(test_dir)
-os.makedirs(validate_dir)
-os.makedirs(train_dir)
+    os.makedirs(d)
 
 # Loop through the subdirectories of the source data (i.e image class folders)
 for subdir in os.listdir(source_dir):
+
+    # Skip any items in the source directory that are not directories
+    if not os.path.isdir(os.path.join(source_dir, subdir)):
+        continue
 
     # Make the corresponding subdirectories in each of the destination directories
     os.makedirs(os.path.join(test_dir, subdir))
