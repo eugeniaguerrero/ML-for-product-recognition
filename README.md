@@ -25,6 +25,6 @@
 
 
 ## To use TensorBoard
-Find the folder where the tensorflow binaries are located: `cd /Users/<name>/tensorflow/bin`
-Then run: `./tensorboard --logdir=/Users/<name>/Documents/OcadoProject/logs`
-To see it online: navigate to `localhost:6060` on your browser
+1. Find the folder where the tensorflow binaries are located: `cd /Users/<name>/tensorflow/bin`
+2. Then run: `./tensorboard --logdir=/Users/<name>/Documents/OcadoProject/logs`
+3. To see it online: navigate to `localhost:6060` on your browser
