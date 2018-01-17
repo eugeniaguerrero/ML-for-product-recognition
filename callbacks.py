@@ -20,7 +20,8 @@ class logs(object):
         self.json_log = open('loss_log.json', mode='wt', buffering=1)
         self.json_logging_callback = LambdaCallback(
             on_epoch_end=lambda epoch, logs: self.json_log.write(
-                json.dumps({'epoch': epoch, 'loss': logs['loss'], 'accuracy': logs['acc']}) + '\n'),
+                json.dumps({'epoch': epoch, 'loss': logs['loss'], 'accuracy': logs['acc']
+                               ,'val_loss' : logs['val_loss'],'val_accuracy': logs['val_acc']}) + '\n'),
             on_train_end=lambda logs: self.json_log.close()
         )
 
@@ -28,7 +29,6 @@ class logs(object):
             on_train_begin=lambda logs: self.start_of_training(logs),
             on_train_end=lambda logs: self.end_of_training(logs),
             on_epoch_end=lambda epoch,logs: self.update_counter(epoch,logs)
-
         )
 
 
@@ -48,14 +48,14 @@ class logs(object):
 
     def update_counter(self,epoch,logs):
         self.counter += 1
-        values_to_add = 'Epoch: ' + str(epoch+1) + '\nLoss: ' + str(logs['loss'])+ '\nAccuracy: ' + str(logs['acc'])
+        values_to_add = 'Epoch: ' + str(epoch+1) + '\nLoss: ' + str(logs['loss'])+ '\nAccuracy: ' + str(logs['acc']) + '\nVal_loss: ' + str(logs['val_loss']) + '\nVal_accuracy: '  + str(logs['val_acc'])
         percentage = str(self.counter/NUMBER_EPOCHS * 100)
         title_string = percentage + str('% [')
         for i in range(round(self.counter/NUMBER_EPOCHS * 10)):
-            title_string = title_string + '='
+            title_string = title_string + '=='
         title_string = title_string + '>'
         for i in range(10-round(self.counter/NUMBER_EPOCHS * 10)):
-            title_string = title_string + '_'
+            title_string = title_string + '__'
         title_string = title_string + ']'
 
         slack_data = {
