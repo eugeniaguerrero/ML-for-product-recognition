@@ -38,17 +38,24 @@ class NN(object):
         self.model.compile(loss='categorical_crossentropy', optimizer=sgd,metrics = ['accuracy'])
 
 
-    def train(self,directory_,model_name,epochs):
-        train_datagen = ImageDataGenerator(
+    def train(self,train_directory_, validation_directory_,model_name,epochs):
+        datagen = ImageDataGenerator(
             rescale=1. / 255,
             shear_range=0.2,
             zoom_range=0.2,
             horizontal_flip=True)
+
         test_datagen = ImageDataGenerator(rescale=1. / 255)
         calls_ = logs()
 
-        train_generator = train_datagen.flow_from_directory(
-            directory_,
+        train_generator = datagen.flow_from_directory(
+            train_directory_,
+            target_size=(100, 100),
+            batch_size=32,
+            class_mode="categorical")
+
+        validate_generator = datagen.flow_from_directory(
+            validation_directory_,
             target_size=(100, 100),
             batch_size=32,
             class_mode="categorical")  # CHANGE THIS!!!
@@ -71,7 +78,6 @@ class NN(object):
                                                                                          embeddings_freq=0,
                                                                                          embeddings_layer_names=None,
                                                                                          embeddings_metadata=None)],epochs=10)
-
 
         current_directory = os.path.dirname(os.path.abspath(__file__))
         print("Model saved to " + os.path.join(current_directory, os.path.pardir, "models", model_name + '.hdf5'))
