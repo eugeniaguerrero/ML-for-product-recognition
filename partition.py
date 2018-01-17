@@ -86,5 +86,3 @@ print("There are {} test data images".format(n_test))
 print("There are {} validation data images".format(n_validate))
 print("There are {} training images".format(n_train))
 print("There were {} images in the original data".format(total))
-
-
