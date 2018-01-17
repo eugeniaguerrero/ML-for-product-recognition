@@ -13,6 +13,7 @@ from folder_manipulation import *
 
 class NN(object):
     def __init__(self,cached_model= None):
+        self.name = "vgg_net"
         self.model = Sequential()
         # input: 100x100 images with 3 channels -> (100, 100, 3) tensors.
         # this applies 32 convolution filters of size 3x3 each.
@@ -20,7 +21,6 @@ class NN(object):
         self.model.add(Conv2D(32, (3, 3), activation='relu'))
         self.model.add(MaxPooling2D(pool_size=(2, 2)))
         self.model.add(Dropout(0.25))
-
         self.model.add(Conv2D(64, (3, 3), activation='relu'))
         self.model.add(Conv2D(64, (3, 3), activation='relu'))
         self.model.add(MaxPooling2D(pool_size=(2, 2)))
@@ -37,6 +37,18 @@ class NN(object):
         sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
         self.model.compile(loss='categorical_crossentropy', optimizer=sgd,metrics = ['accuracy'])
 
+    def clean_up_logs(self):
+        if not os.path.exists('old_logs'):
+            os.makedirs('old_logs')
+        old_logs_list = os.listdir('old_logs')
+        numbers = []
+        for i in old_logs_list:
+            numbers.append(int(i.split('_')[0]))
+        numbers = sorted(numbers)
+        count = numbers[-1]+1
+        foldername = str(count) + '_' + self.name
+        os.rename('logs', os.path.join('old_logs',foldername))
+        print("Tensorboard data is in : ./old_logs/" + foldername)
 
     def train(self,train_directory_, validation_directory_,model_name,epochs):
         datagen = ImageDataGenerator(
@@ -60,10 +72,10 @@ class NN(object):
             batch_size=32,
             class_mode="categorical")  # CHANGE THIS!!!
 
-        self.model.fit_generator(train_generator, callbacks=[calls_.json_logging_callback,
+        self.model.fit_generator(train_generator, validation_data=validate_generator,callbacks=[calls_.json_logging_callback,
                                                              calls_.slack_callback,
                                                              keras.callbacks.TerminateOnNaN(),
-                                                             keras.callbacks.ModelCheckpoint(filepath='./checkpoints/intermediate.hdf5',
+                                                             keras.callbacks.ModelCheckpoint(filepath=os.path.join('checkpoints','intermediate.hdf5'),
                                                                                              monitor='val_loss',
                                                                                              verbose=0,
                                                                                              save_best_only=False,
@@ -81,7 +93,12 @@ class NN(object):
 
         current_directory = os.path.dirname(os.path.abspath(__file__))
         print("Model saved to " + os.path.join(current_directory, os.path.pardir, "models", model_name + '.hdf5'))
+        if not os.path.exists("models"):
+            os.makedirs("models")
         self.model.save(os.path.join("models",str(model_name + '.hdf5')))
+        self.clean_up_logs()
+
+
 
     def predict(self,input_data):
         """
