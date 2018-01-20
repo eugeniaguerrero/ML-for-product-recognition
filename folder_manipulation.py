@@ -1,6 +1,7 @@
 import os
 import numpy as np
 from common import *
+import cv2
 
 def get_folders(directory_):
     items = os.listdir(directory_)
@@ -29,7 +30,6 @@ def get_image_names(directory_):
     return images
 
 def get_image(filepath):
-    import cv2
     img = cv2.imread(filepath)
     resized_image = np.expand_dims(cv2.resize(img, (IM_HEIGHT, IM_WIDTH)), axis=0)
     return resized_image
@@ -42,5 +42,4 @@ def dstack_folder(directory_):
         for image in image_list[1:]:
             new_image = get_image(os.path.join(directory_, image_list[0]))
             images = np.concatenate((new_image,images),axis = 0)
-        print(images.shape)
     return images

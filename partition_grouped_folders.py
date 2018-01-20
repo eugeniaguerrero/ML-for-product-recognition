@@ -99,7 +99,7 @@ for subdir in os.listdir(source_dir):
         j+=1
 
     while(j <  n_groups*(test_pct+validate_pct)):
-        if list(files.values()).count(j) == required_frames:
+        if list(files.values()).count(groups[j]) == required_frames:
             video_folder = os.path.join(validate_dir, subdir, prefix + str(j))
             os.makedirs(video_folder)
             for file_name in files:
@@ -108,7 +108,7 @@ for subdir in os.listdir(source_dir):
         j+=1
 
     while(j <= n_groups):
-        if list(files.values()).count(j) == required_frames:
+        if list(files.values()).count(groups[j]) == required_frames:
             video_folder = os.path.join(train_dir, subdir, prefix + str(j))
             os.makedirs(video_folder)
             for file_name in files:

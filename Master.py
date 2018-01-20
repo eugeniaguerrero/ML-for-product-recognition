@@ -1,4 +1,4 @@
-from inception_v3 import *
+from cnn_lstm import *
 from common import *
 
 nn = NN()
