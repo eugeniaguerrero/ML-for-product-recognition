@@ -34,7 +34,10 @@ class NN(object):
         for i in old_logs_list:
             numbers.append(int(i.split('_')[0]))
         numbers = sorted(numbers)
-        count = numbers[-1]+1
+        if len(numbers) == 0:
+            count = 0
+        else:
+            count = numbers[-1]+1
         foldername = str(count) + '_' + self.name
         os.rename('logs', os.path.join('old_logs',foldername))
         print("Tensorboard data is in : ./old_logs/" + foldername)
@@ -94,7 +97,7 @@ class NN(object):
         # at this point, the top layers are well trained and we can start fine-tuning
         # convolutional layers from inception V3. We will freeze the bottom N layers
         # and train the remaining top layers.
-
+        self.clean_up_logs()
         # let's visualize layer names and layer indices to see how many layers
         # we should freeze:
         for i, layer in enumerate(self.base_model.layers):

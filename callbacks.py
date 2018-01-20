@@ -35,7 +35,8 @@ class logs(object):
     def start_of_training(self,logs):
         slack_data = {'text': "The wolf has started to prowl"}
         webhook_url = 'https://hooks.slack.com/services/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'
-
+        self.counter = 0
+        self.json_log = open('loss_log.json', mode='wt', buffering=1)
         response = requests.post(
             webhook_url, data=json.dumps(slack_data),
             headers={'Content-Type': 'application/json'}
