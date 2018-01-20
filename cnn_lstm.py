@@ -7,7 +7,7 @@ import keras
 
 from keras import backend as K
  #set learning phase
-
+K.set_learning_phase(1)
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten
 from keras.layers import Conv2D, MaxPooling2D
@@ -49,6 +49,8 @@ class NN(object):
         if cached_model is not None:
             self.model = load_model(cached_model)
 
+        sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+        self.model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
 
 
     def clean_up_logs(self):
@@ -65,9 +67,7 @@ class NN(object):
         print("Tensorboard data is in : ./old_logs/" + foldername)
 
     def train(self,train_directory_, validation_directory_,model_name,epochs):
-        K.set_learning_phase(1)
-        sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-        self.model.compile(loss='categorical_crossentropy', optimizer=sgd,metrics = ['accuracy'])
+
         # Parameters
         params = {'dir': 'training_data', 'batch_size': 16,
                   'shuffle': True}
