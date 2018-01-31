@@ -1,10 +1,12 @@
 # Group Project
 
-## Before adding a change:
+## Adding a change:
 1. `git pull master`
 2. `git merge master`
 3. `git status`
-4. git `add <files>` or `git add .`
+4. `git add <files>` or `git add .`
+5. `git commit -m <informative commit message>`
+6. `git push origin <name of branch>`
 
 ### Creating a branch
 `git checkout -b <name of branch>`
@@ -22,7 +24,6 @@
 4. Update the .compile function to add metrics=['accuracy']
 5. Check the NN using the debug function!!!
 6. Change the self.name of the model + ensure you don't delete clean_up_logs
-
 
 ## To use TensorBoard
 1. Find the folder where the tensorflow binaries are located: `cd /Users/<name>/tensorflow/bin`
