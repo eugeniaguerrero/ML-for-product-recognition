@@ -8,3 +8,6 @@ product-image-dataset/
 test_data/
 training_data/
 validation_data/
+debug_folder_grouped/
+dstack_folder_test/
+test/

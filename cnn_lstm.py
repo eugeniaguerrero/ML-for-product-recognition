@@ -69,7 +69,7 @@ class NN(object):
     def train(self,train_directory_, validation_directory_,model_name,epochs):
 
         # Parameters
-        params = {'dir': 'training_data', 'batch_size': 16,
+        params = {'dir': train_directory_, 'batch_size': 16,
                   'shuffle': True}
 
         # Generators
@@ -78,6 +78,7 @@ class NN(object):
 				  'shuffle': True}
         validation_generator = DataGenerator(**params).generate()
         # CHANGE THIS!!!
+
 
         calls_ = logs()
         self.model.fit_generator(training_generator, validation_data=validation_generator,
@@ -130,11 +131,8 @@ class NN(object):
     def debug(self,directory_):
 
         #Test 1 check if untrained model returns uniform predictions
-        folders = get_folders(directory_)
-        image_list = get_image_names(os.path.join(directory_, folders[0]))
-        filepath = os.path.join(directory_,folders[0],image_list[0])
-        resized_image = get_image(filepath)
-        predictions = self.predict(resized_image)
+        images = np.random.rand(1,4,100,100,3)
+        predictions = self.predict(images)
 
         if np.max(predictions) - np.min(predictions) > 0.1:
             print("Starting with a pre-trained model")
@@ -142,9 +140,8 @@ class NN(object):
             print("Starting without a pre-trained model")
         print("Initial predictions are:")
         print(predictions)
-
         #Test 2 see if accuracy goes very quickly to 1 on 1 image
-        self.train(directory_,'debugging_model',10)
+        self.train('debug_folder_grouped','debug_folder_grouped','debug_model',10)
 
     def find_incorrect_classifications(self,directory_):
         incpred = "incorrect_predictions"
