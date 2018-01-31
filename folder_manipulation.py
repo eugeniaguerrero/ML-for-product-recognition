@@ -37,9 +37,11 @@ def get_image(filepath):
 def dstack_folder(directory_):
     image_list = get_image_names(directory_)
     images = []
+
     if len(image_list) > 0:
         images = get_image(os.path.join(directory_,image_list[0]))
         for image in image_list[1:]:
             new_image = get_image(os.path.join(directory_, image_list[0]))
+
             images = np.concatenate((new_image,images),axis = 0)
     return images

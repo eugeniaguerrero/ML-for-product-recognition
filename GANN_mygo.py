@@ -4,7 +4,7 @@ from keras.datasets import mnist
 from keras.layers import Input, Dense, Reshape, Flatten, Dropout
 from keras.layers import BatchNormalization, Activation, ZeroPadding2D
 from keras.layers.advanced_activations import LeakyReLU
-from keras.layers.convolutional import UpSampling2D, Conv2D
+from keras.layers.convolutional import UpSampling2D, Conv2D,MaxPooling2D
 from keras.models import Sequential, Model
 from keras.optimizers import Adam
 from common import *
@@ -16,12 +16,12 @@ from callbacks import *
 from common import *
 from folder_manipulation import *
 
-class NN(object):
+class DCGAN(object):
     def __init__(self,cached_model= None):
 
-        self.img_rows = 28
-        self.img_cols = 28
-        self.channels = 1
+        self.img_rows = IM_HEIGHT
+        self.img_cols = IM_WIDTH
+        self.channels = 3
 
         optimizer = Adam(0.0002, 0.5)
 
@@ -36,12 +36,12 @@ class NN(object):
         self.generator.compile(loss='binary_crossentropy', optimizer=optimizer)
 
         # The generator takes noise as input and generated imgs
-        z = Input(shape=(100,))
+        z = Input(shape=(100,100,3))
         img = self.generator(z)
 
         # For the combined model we will only train the generator
         self.discriminator.trainable = False
-
+        print(img)
         # The valid takes generated images as input and determines validity
         valid = self.discriminator(img)
 
@@ -71,24 +71,37 @@ class NN(object):
         model.add(LeakyReLU(alpha=0.2))
         model.add(Dropout(0.25))
 
+        model.add(Flatten())
+        model.add(Dense(1, activation='sigmoid'))
 
-        self.name = "vgg_net"
-        self.model = Sequential()
-        # input: 100x100 images with 3 channels -> (100, 100, 3) tensors.
-        # this applies 32 convolution filters of size 3x3 each.
-        self.model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(IM_HEIGHT,IM_WIDTH,3)))
-        self.model.add(Conv2D(32, (3, 3), activation='relu'))
-        self.model.add(MaxPooling2D(pool_size=(2, 2)))
-        self.model.add(Dropout(0.25))
-        self.model.add(Conv2D(64, (3, 3), activation='relu'))
-        self.model.add(Conv2D(64, (3, 3), activation='relu'))
-        self.model.add(MaxPooling2D(pool_size=(2, 2)))
-        self.model.add(Dropout(0.25))
+        model.summary()
 
-        self.model.add(Flatten())
-        self.model.add(Dense(256, activation='relu'))
-        self.model.add(Dropout(0.5))
-        self.model.add(Dense(NUMBER_CLASSES, activation='softmax'))
+        img = Input(shape=img_shape)
+        validity = model(img)
+
+        return Model(img, validity)
+
+    def build_generator(self):
+
+        img_shape = (self.img_rows, self.img_cols, self.channels)
+
+        model = Sequential()
+
+        model.add(Conv2D(32, kernel_size=3, strides=2, input_shape=img_shape, padding="same"))
+        model.add(LeakyReLU(alpha=0.2))
+        model.add(Dropout(0.25))
+        model.add(Conv2D(64, kernel_size=3, strides=2, padding="same"))
+        model.add(ZeroPadding2D(padding=((0, 1), (0, 1))))
+        model.add(LeakyReLU(alpha=0.2))
+        model.add(Dropout(0.25))
+        model.add(BatchNormalization(momentum=0.8))
+        model.add(Conv2D(128, kernel_size=3, strides=2, padding="same"))
+        model.add(LeakyReLU(alpha=0.2))
+        model.add(Dropout(0.25))
+        model.add(BatchNormalization(momentum=0.8))
+        model.add(Conv2D(256, kernel_size=3, strides=1, padding="same"))
+        model.add(LeakyReLU(alpha=0.2))
+        model.add(Dropout(0.25))
 
         model.add(Flatten())
         model.add(Dense(1, activation='sigmoid'))
@@ -100,23 +113,83 @@ class NN(object):
 
         return Model(img, validity)
 
-
-        if cached_model is not None:
-            self.model = load_model(cached_model)
-
-        sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-        self.model.compile(loss='categorical_crossentropy', optimizer=sgd,metrics = ['accuracy'])
+    def train(self, epochs, batch_size=32, save_interval=50):#, dir_ = dir):
 
 
-    def train(self,train_directory_, validation_directory_,model_name,epochs):
+        # Load the dataset
+        #(X_train, _), (_, _) = mnist.load_data()
+        
+        X_train = self.get_data()
+
+        # Rescale -1 to 1
+        X_train = (X_train.astype(np.float32) - 127.5) / 127.5
+        #X_train = np.expand_dims(X_train, axis=3)
+        print(X_train.shape)
+
+        half_batch = int(batch_size / 2)
+
+        for epoch in range(epochs):
+
+            # ---------------------
+            #  Train Discriminator
+            # ---------------------
+
+            # Select a random half batch of images
+            idx = np.random.randint(0, X_train.shape[0], half_batch)
+            imgs = X_train[idx]
+
+            # Sample noise and generate a half batch of new images
+            noise = np.random.normal(0, 1, (half_batch,100,100,3))
+            gen_imgs = self.generator.predict(noise)
+
+            # Train the discriminator (real classified as ones and generated as zeros)
+            d_loss_real = self.discriminator.train_on_batch(imgs, np.ones((half_batch, 1)))
+            d_loss_fake = self.discriminator.train_on_batch(gen_imgs, np.zeros((half_batch, 1)))
+            d_loss = 0.5 * np.add(d_loss_real, d_loss_fake)
+
+            # ---------------------
+            #  Train Generator
+            # ---------------------
+
+            noise = np.random.normal(0, 1, (batch_size, 100))
+
+            # Train the generator (wants discriminator to mistake images as real)
+            g_loss = self.combined.train_on_batch(noise, np.ones((batch_size, 1)))
+
+            # Plot the progress
+            print("%d [D loss: %f, acc.: %.2f%%] [G loss: %f]" % (epoch, d_loss[0], 100 * d_loss[1], g_loss))
+
+            # If at save interval => save generated image samples
+            if epoch % save_interval == 0:
+                self.save_imgs(epoch)
+
+    def get_data(self):
+        path = os.path.join('training_data','3073781011456')
+        return dstack_folder(path)
 
 
-        self.model.fit_generator(train_generator, validation_data=validate_generator)
 
 
-        current_directory = os.path.dirname(os.path.abspath(__file__))
-        print("Model saved to " + os.path.join(current_directory, os.path.pardir, "models", model_name + '.hdf5'))
-        if not os.path.exists("models"):
-            os.makedirs("models")
-        self.model.save(os.path.join("models",str(model_name + '.hdf5')))
+    def save_imgs(self, epoch):
+        r, c = 5, 5
+        noise = np.random.normal(0, 1, (r * c, 100))
+        gen_imgs = self.generator.predict(noise)
 
+        # Rescale images 0 - 1
+        gen_imgs = 0.5 * gen_imgs + 0.5
+
+        fig, axs = plt.subplots(r, c)
+        # fig.suptitle("DCGAN: Generated digits", fontsize=12)
+        cnt = 0
+        for i in range(r):
+            for j in range(c):
+                axs[i, j].imshow(gen_imgs[cnt, :, :, 0], cmap='gray')
+                axs[i, j].axis('off')
+                cnt += 1
+        fig.savefig("dcgan/images/ocado_%d.png" % epoch)
+        plt.close()
+
+
+
+dcgan = DCGAN()
+dcgan.train(epochs=4000, batch_size=32, save_interval=50)
