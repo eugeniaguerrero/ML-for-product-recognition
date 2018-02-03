@@ -1,28 +1,26 @@
 import cv2
 import numpy as np
 
-def histogramEqualiseColour(img):
+def CLAHE_equalisation(img):
     # # set
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
     # split into channels
-    # channels=cv2.split(ycrcb)
-    # equalise
-    # cv2.equalizeHist(channels[0],channels[0])
+    l, a, b, = cv2.split(lab)
     # apply contrast limiting
-    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-    img = clahe.apply(img)
-    # merge all the channels
-    # cv2.merge(channels, ycrcb)
-    # convert back to ycrcb
-    # cv2.cvtColor(ycrcb,cv2.COLOR_YCR_CB2BGR,clahe_img)
+    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
+    cl = clahe.apply(l)
+    # merge enhanced L-channel with a and b channels
+    l_img = cv2.merge((cl,a,b))
+    # convert back to RGB model
+    final = cv2.cvtColor(l_img, cv2.COLOR_LAB2BGR)
 
-    return img
+    return final
 
 
-photo_name = './histogram_test_images/orange4.jpg'
+photo_name = './histogram_test_images/orange2.jpg'
 img = cv2.imread(photo_name, 1)
-img = histogramEqualiseColour(img)
+processed = CLAHE_equalisation(img)
 # cv2.imshow("ypp", img)
 # cv2.waitKey(0)
 # cv2.destroyAllWindows()
-cv2.imwrite('img2.jpg', img)
+cv2.imwrite('processed2.jpg', processed)
