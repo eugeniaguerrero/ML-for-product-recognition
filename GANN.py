@@ -136,6 +136,7 @@ class DCGAN():
 
             # Sample noise and generate a half batch of new images
             noise = np.random.normal(0, 1, (half_batch, 100))
+
             gen_imgs = self.generator.predict(noise)
 
             # Train the discriminator (real classified as ones and generated as zeros)
@@ -186,7 +187,6 @@ class DCGAN():
             count2 += 1
         fig.savefig("dcgan/images/mnist_%d.png" % epoch)
         plt.close()
-
 
 if __name__ == '__main__':
     dcgan = DCGAN()
