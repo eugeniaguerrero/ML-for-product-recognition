@@ -1,6 +1,6 @@
 #File containing the main parameters used for the neural network
 
-#vgg_net images
+#vgg_net images MUST BE DIVISIBLE BY 4!!!
 IM_HEIGHT = 100
 IM_WIDTH = 100
 '''
