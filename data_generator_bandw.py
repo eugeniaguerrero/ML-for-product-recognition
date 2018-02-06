@@ -57,7 +57,7 @@ class DataGenerator(object):
       #CHANGED THIS
       X = np.empty((self.batch_size, IM_HEIGHT, IM_WIDTH, 1))
       for i in range(len(list_IDs_temp)):
-        X[i,:,:,:] = get_image(list_IDs_temp[i])/255
+        X[i,:,:,:] = (get_image(list_IDs_temp[i])-127.5)/255
         #RESCALE!!!!!!!!!
       return X
 
