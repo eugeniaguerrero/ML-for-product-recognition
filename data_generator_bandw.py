@@ -1,6 +1,6 @@
 import numpy as np
 from common import *
-from folder_manipulation import *
+from folder_manipulation_bandw import *
 
 class DataGenerator(object):
   'Generates data for Keras'
@@ -55,9 +55,9 @@ class DataGenerator(object):
       # Initialization
       #X is 4 as time is 4 steps/ images per folder
       #CHANGED THIS
-      X = np.empty((self.batch_size, IM_HEIGHT, IM_WIDTH, 3))
+      X = np.empty((self.batch_size, IM_HEIGHT, IM_WIDTH, 1))
       for i in range(len(list_IDs_temp)):
-        X[i,:,:,:] = (get_image(list_IDs_temp[i])-127.5)/127.5
+        X[i,:,:,:] = (get_image(list_IDs_temp[i])-127.5)/255
         #RESCALE!!!!!!!!!
       return X
 
@@ -75,9 +75,9 @@ def sparsify(y):
 params = {'dir':'validation_data','batch_size': 16,
                 'shuffle': True}
 data_gen = DataGenerator(**params).generate()
-for i in range(26):
-    data_gen.__next__()
+data_gen.__next__()
 '''
+
 '''
 params = {'dir':'validation_data','batch_size': 16,
                 'shuffle': True}

@@ -32,7 +32,7 @@ def get_image_names(directory_):
 def get_image(filepath):
     img = cv2.imread(filepath)
     #CHANGED THIS
-    resized_image = np.expand_dims(cv2.resize(img, (IM_HEIGHT, IM_WIDTH)), axis=0)
+    resized_image = np.expand_dims(cv2.resize(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), (IM_HEIGHT, IM_WIDTH)), axis=2)
     return resized_image
 
 def dstack_folder(directory_):

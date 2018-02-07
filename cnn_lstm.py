@@ -74,7 +74,7 @@ class NN(object):
 
         # Generators
         training_generator = DataGenerator(**params).generate()
-		params = {'dir': validation_directory_, 'batch_size': 16,
+        params = {'dir': validation_directory_, 'batch_size': 16,
 				  'shuffle': True}
         validation_generator = DataGenerator(**params).generate()
         # CHANGE THIS!!!
