@@ -1,9 +1,6 @@
-from keras.layers import Conv2D, MaxPooling2D, Flatten
-from keras.layers import Input, LSTM, Embedding, Dense
-from keras.models import Model, Sequential
-from data_generator_time import *
-import numpy as np
-import keras
+from keras.layers import Input, LSTM
+from keras.models import Model
+from src.DATA_PREPARATION.data_generator_time import *
 
 from keras import backend as K
  #set learning phase
@@ -12,11 +9,9 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten
 from keras.layers import Conv2D, MaxPooling2D
 from keras.optimizers import SGD
-import os
 from keras.models import load_model
-from callbacks import *
-from common import *
-from folder_manipulation import *
+from src.callbacks import *
+from src.DATA_PREPARATION.folder_manipulation import *
 
 class NN(object):
     def __init__(self,cached_model= None):

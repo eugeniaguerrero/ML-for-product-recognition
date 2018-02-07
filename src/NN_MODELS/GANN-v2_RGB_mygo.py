@@ -1,24 +1,21 @@
-import os
-
-import matplotlib.pyplot as plt
+import shutil
+#import matplotlib.pyplot as plt
 #matplotlib inline
 #config InlineBackend.figure_format = 'retina'
-from data_generator_bandw import *
-import keras.backend as K
-from keras.datasets import mnist
+from src.DATA_PREPARATION.data_generator import *
 from keras.layers import *
 from keras.models import *
 from keras.optimizers import *
 from keras.initializers import *
 from keras.callbacks import *
 from keras.utils.generic_utils import Progbar
-from common import *
-
+from src.common import *
+FOLDER_NUMBER = 0
+ITERATION = 0
 
 
 class WGANN(object):
     def __init__(self):
-        self.model_name = "WGANN"
         RND = 777
         RUN = 'F'
         self.OUT_DIR = 'out/' + RUN
@@ -29,15 +26,15 @@ class WGANN(object):
         self.Z_SIZE = IM_WIDTH
         # number of iterations D is trained for per each G iteration
         self.D_ITERS = 5
-        self.BATCH_SIZE = 30
+        self.BATCH_SIZE = 50
         self.ITERATIONS = 25000
-
+        self.NO_CHANNELS = 3
         self.DG_losses = []
         self.D_true_losses = []
         self.D_fake_losses = []
 
         # write tensorboard summaries
-        self.sw = tf.summary.FileWriter(self.TENSORBOARD_DIR)
+        #self.sw = tf.summary.FileWriter(self.TENSORBOARD_DIR)
 
         # save 10x10 sample of generated images
         self.samples_zz = np.random.normal(0., 1., (100, self.Z_SIZE))
@@ -54,6 +51,7 @@ class WGANN(object):
 
 
         if not os.path.isdir(self.OUT_DIR): os.makedirs(self.OUT_DIR)
+        ##MAYBE DELETE THIS!!
         K.set_image_dim_ordering('tf')
 
 
@@ -72,7 +70,7 @@ class WGANN(object):
         weight_init = RandomNormal(mean=0., stddev=0.02)
 
         #CHANGED THIS
-        input_image = Input(shape=(IM_WIDTH, IM_WIDTH, 1), name='input_image')
+        input_image = Input(shape=(IM_WIDTH, IM_WIDTH, self.NO_CHANNELS), name='input_image')
 
         x = Conv2D(32, (3, 3),padding='same',name='conv_1',kernel_initializer=weight_init)(input_image)
         x = LeakyReLU()(x)
@@ -89,7 +87,7 @@ class WGANN(object):
         x = LeakyReLU()(x)
         x = Dropout(0.3)(x)
 
-        x = Conv2D(256, (3, 3),padding='same',name='coonv_4',
+        x = Conv2D(256, (3, 3),padding='same',name='conv_4',
             kernel_initializer=weight_init)(x)
         x = MaxPool2D(pool_size=1)(x)
         x = LeakyReLU()(x)
@@ -142,7 +140,7 @@ class WGANN(object):
         x = Conv2D(128, (5, 5), padding='same', kernel_initializer=weight_init)(x)
         x = LeakyReLU()(x)
 
-        x = Conv2D(1, (2, 2),padding='same', activation='tanh',name='output_generated_image',kernel_initializer=weight_init)(x)
+        x = Conv2D(self.NO_CHANNELS, (2, 2),padding='same', activation='tanh',name='output_generated_image',kernel_initializer=weight_init)(x)
         return Model(inputs=[input_z, input_class], outputs=x, name='G')
 
 
@@ -169,20 +167,40 @@ class WGANN(object):
 
 
     def generate_samples(self,n=0, save=True):
-
+        global FOLDER_NUMBER
+        global ITERATION
         generated_classes = np.array(list(range(0, 10)) * 10)
         generated_images = self.G.predict([self.samples_zz, generated_classes.reshape(-1, 1)])
+        #print(generated_images.shape)
+        if FOLDER_NUMBER == 0:
+            if os.path.exists('new_img_folder'):
+                shutil.rmtree('new_img_folder')
+            os.makedirs('new_img_folder')
 
+        folder_name = os.path.join('new_img_folder', str(FOLDER_NUMBER))
+
+
+        if os.path.exists(folder_name):
+            shutil.rmtree(folder_name)
+        os.makedirs(folder_name)
+        print("WORKING")
         rr = []
-        for c in range(10):
+        for c in range(generated_images.shape[0]):
             #CHANGED THIS
-            rr.append(np.concatenate(generated_images[c * 10:(1 + c) * 10]).reshape(10*IM_WIDTH,IM_WIDTH))
+            file_name = str(c) + '.png'
+            img = (generated_images[c,:,:,:]*127.5)+127.5
+            #print(img.shape)
+            #if save & ITERATION % 1 == 0:
+            cv2.imwrite(os.path.join(folder_name, file_name), img)
+            FOLDER_NUMBER += 1
+            rr.append(img)
         img = np.hstack(rr)
+        #print(img.shape)
 
-        if save:
-            plt.imsave(self.OUT_DIR + '/samples_%07d.png' % n, img, cmap=plt.cm.gray)
-
+        ITERATION += 1
+        # plt.imsave(OUT_DIR + '/samples_%07d.png' % n, img, cmap=plt.cm.gray)
         return img
+
 
     def update_tb_summary(self,step, sample_images=True, save_image_files=True):
 
@@ -209,12 +227,12 @@ class WGANN(object):
         # generated image
         if sample_images:
             img = self.generate_samples(step, save=save_image_files)
-            s.MergeFromString(tf.Session().run(
-                tf.summary.image('samples_%07d' % step,
-                                 img.reshape([1, *img.shape, 1]))))
+            #s.MergeFromString(tf.Session().run(
+                #tf.summary.image('samples_%07d' % step,
+                                 #img.reshape([1, *img.shape]))))
 
-        self.sw.add_summary(s, step)
-        self.sw.flush()
+        #self.sw.add_summary(s, step)
+        #self.sw.flush()
 
 
         # fake = 1
@@ -222,6 +240,7 @@ class WGANN(object):
 
     def train(self):
 
+        
         params = {'dir': 'training_data', 'batch_size': self.BATCH_SIZE,'shuffle': True}
         train_data_gen = DataGenerator(**params).generate()
         params2 = {'dir': 'validation_data', 'batch_size': self.BATCH_SIZE, 'shuffle': True}
@@ -239,14 +258,14 @@ class WGANN(object):
             # load mnist data
             (X_train, y_train) = train_data_gen.__next__()
             (X_test, y_test) = validation_data_gen.__next__()
-            # (X_train, y_train), (X_test, y_test) = mnist.load_data()
+            #(X_train, y_train), (X_test, y_test) = mnist.load_data()
 
             # use all available 70k samples
-            X_train = np.concatenate((X_train, X_test))
-            y_train = np.concatenate((y_train, y_test))
+            #X_train = np.concatenate((X_train, X_test))
+            #y_train = np.concatenate((y_train, y_test))
 
             # convert to -1..1 range, reshape to (sample_i, 28, 28, 1)
-            X_train = (X_train.astype(np.float32) - 127.5) / 127.5
+            #X_train = (X_train.astype(np.float32) - 127.5) / 127.5
             #X_train = np.expand_dims(X_train, axis=3)
             #print(self.D_true_losses)
 
@@ -296,15 +315,17 @@ class WGANN(object):
                 # load mnist data
                 (X_train, y_train) = train_data_gen.__next__()
                 (X_test, y_test) = validation_data_gen.__next__()
-                # (X_train, y_train), (X_test, y_test) = mnist.load_data()
 
+                # IF TESTING MNIST
+                #(X_train, y_train), (X_test, y_test) = mnist.load_data()
                 # use all available 70k samples
-                X_train = np.concatenate((X_train, X_test))
-                y_train = np.concatenate((y_train, y_test))
+                #X_train = np.concatenate((X_train, X_test))
+                #y_train = np.concatenate((y_train, y_test))
+                #X_train = np.expand_dims(X_train, axis=3)
 
                 # convert to -1..1 range, reshape to (sample_i, 28, 28, 1)
-                X_train = (X_train.astype(np.float32) - 127.5) / 127.5
-                #X_train = np.expand_dims(X_train, axis=3)
+                #X_train = (X_train.astype(np.float32) - 127.5) / 127.5
+
                 # draw random samples from real images
                 index = np.random.choice(len(X_train), self.BATCH_SIZE, replace=False)
                 real_images = X_train[index]
@@ -346,7 +367,8 @@ class WGANN(object):
             if it % 10 == 0:
                 self.update_tb_summary(it, sample_images=(it % 10 == 0), save_image_files=True)
 
-        self.D.save(os.path.join("models", str(self.model_name + '.hdf5')))
+
+
 
 wg = WGANN()
 wg.train()

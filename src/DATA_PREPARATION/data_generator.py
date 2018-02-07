@@ -1,6 +1,4 @@
-import numpy as np
-from common import *
-from folder_manipulation import *
+from src.DATA_PREPARATION.folder_manipulation import *
 
 class DataGenerator(object):
   'Generates data for Keras'

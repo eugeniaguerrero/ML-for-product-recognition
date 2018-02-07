@@ -1,10 +1,9 @@
-from folder_manipulation import *
+from src.DATA_PREPARATION.folder_manipulation import *
 import shutil
 import cv2
 import numpy as np
 import os
 from skimage.measure import compare_ssim
-from scipy import stats
 
 
 def mse(imageA, imageB):
