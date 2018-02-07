@@ -1,15 +1,11 @@
-import numpy as np
-import keras
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten
 from keras.layers import Conv2D, MaxPooling2D
 from keras.optimizers import SGD
 from keras.preprocessing.image import ImageDataGenerator
-import os
 from keras.models import load_model
-from callbacks import *
-from common import *
-from folder_manipulation import *
+from src.callbacks import *
+from src.DATA_PREPARATION.folder_manipulation import *
 
 class NN(object):
     def __init__(self,cached_model= None):

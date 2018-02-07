@@ -1,8 +1,7 @@
-import keras
 from keras.callbacks import LambdaCallback
 import json
 import requests
-from common import NUMBER_EPOCHS
+from src.common import NUMBER_EPOCHS
 from math import ceil
 
 
