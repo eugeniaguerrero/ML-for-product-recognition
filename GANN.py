@@ -4,21 +4,24 @@ from keras.datasets import mnist
 from keras.layers import Input, Dense, Reshape, Flatten, Dropout
 from keras.layers import BatchNormalization, Activation, ZeroPadding2D
 from keras.layers.advanced_activations import LeakyReLU
-from keras.layers.convolutional import UpSampling2D, Conv2D
+from keras.layers.convolutional import UpSampling2D,Conv2D
 from keras.models import Sequential, Model
 from keras.optimizers import Adam
 from common import *
+import os
+from folder_manipulation import *
 import matplotlib.pyplot as plt
 
 import sys
+
 import numpy as np
 
 
 class DCGAN():
     def __init__(self):
-        self.img_rows = 28
-        self.img_cols = 28
-        self.channels = 1
+        self.img_rows = 100
+        self.img_cols = 100
+        self.channels = 3
 
         optimizer = Adam(0.0002, 0.5)
 
@@ -53,8 +56,8 @@ class DCGAN():
 
         model = Sequential()
 
-        model.add(Dense(128 * 7 * 7, activation="relu", input_shape=noise_shape))
-        model.add(Reshape((7, 7, 128)))
+        model.add(Dense(128 * 25 * 25, activation="relu", input_shape=noise_shape))
+        model.add(Reshape((25, 25, 128)))
         model.add(BatchNormalization(momentum=0.8))
         model.add(UpSampling2D())
         model.add(Conv2D(128, kernel_size=3, padding="same"))
@@ -64,7 +67,7 @@ class DCGAN():
         model.add(Conv2D(64, kernel_size=3, padding="same"))
         model.add(Activation("relu"))
         model.add(BatchNormalization(momentum=0.8))
-        model.add(Conv2D(1, kernel_size=3, padding="same"))
+        model.add(Conv2D(3, kernel_size=3, padding="same"))
         model.add(Activation("tanh"))
 
         model.summary()
@@ -108,13 +111,16 @@ class DCGAN():
 
     def train(self, epochs, batch_size=128, save_interval=50):
 
-        '''
         # Load the dataset
-        (X_train, _), (_, _) = mnist.load_data()
+        #(X_train, _), (_, _) = mnist.load_data()
+        X_train = self.get_data()#[:,:,:,1]
+        #print(X_train2.shape)
+        print(X_train.shape)
+        print('*****************')
 
         # Rescale -1 to 1
         X_train = (X_train.astype(np.float32) - 127.5) / 127.5
-        X_train = np.expand_dims(X_train, axis=3)'''
+        #X_train = np.expand_dims(X_train, axis=3)
 
         half_batch = int(batch_size / 2)
 
@@ -130,6 +136,7 @@ class DCGAN():
 
             # Sample noise and generate a half batch of new images
             noise = np.random.normal(0, 1, (half_batch, 100))
+
             gen_imgs = self.generator.predict(noise)
 
             # Train the discriminator (real classified as ones and generated as zeros)
@@ -153,6 +160,10 @@ class DCGAN():
             if epoch % save_interval == 0:
                 self.save_imgs(epoch)
 
+    def get_data(self):
+        path = os.path.join('training_data','3073781011456')
+        return dstack_folder(path)
+
     def save_imgs(self, epoch):
         r, c = 5, 5
         noise = np.random.normal(0, 1, (r * c, 100))
@@ -166,14 +177,17 @@ class DCGAN():
         cnt = 0
         for i in range(r):
             for j in range(c):
-                axs[i, j].imshow(gen_imgs[cnt, :, :, 0], cmap='gray')
+                axs[i, j].imshow(gen_imgs[cnt, :, :, 0], cmap='brg')
                 axs[i, j].axis('off')
                 cnt += 1
+        os.mkdir("dcgan/images/%d" %epoch)
+        count2 = 0
+        for image in gen_imgs:
+            cv2.imwrite("dcgan/images/%d" %epoch + "/" + str(count2) + '.jpg',(image*127.5)+127.5)
+            count2 += 1
         fig.savefig("dcgan/images/mnist_%d.png" % epoch)
         plt.close()
-
 
 if __name__ == '__main__':
     dcgan = DCGAN()
     dcgan.train(epochs=4000, batch_size=32, save_interval=50)
-
