@@ -1,14 +1,16 @@
 from keras.applications.inception_v3 import InceptionV3
+import keras
 from keras.models import Model
 from keras.layers import Dense, GlobalAveragePooling2D
 from keras.preprocessing.image import ImageDataGenerator
 from keras.models import load_model
 from src.callbacks import *
 from src.DATA_PREPARATION.folder_manipulation import *
+from src.NN_MODELS.common_network_operations import *
 
-class NN(object):
-    def __init__(self,cached_model= None):
-        self.name = "inception_v3"
+class INCEPTION_V3(object):
+    def __init__(self,lr=0.0001,cached_model= None):
+        self.model_name = "inception_v3"
         # create the base pre-trained model
         self.base_model = InceptionV3(weights='imagenet', include_top=False)
         # add a global spatial average pooling layer
@@ -18,32 +20,14 @@ class NN(object):
         x = Dense(1024, activation='relu')(x)
         # and a logistic layer -- let's say we have 200 classes
         predictions = Dense(NUMBER_CLASSES, activation='softmax')(x)
-
+        self.lr = lr
         # this is the model we will train
         self.model = Model(inputs=self.base_model.input, outputs=predictions)
         if cached_model is not None:
             self.model = load_model(cached_model)
 
-    def clean_up_logs(self):
-        if not os.path.exists('old_logs'):
-            os.makedirs('old_logs')
-        old_logs_list = os.listdir('old_logs')
-        numbers = []
-        for i in old_logs_list:
-            numbers.append(int(i.split('_')[0]))
-        numbers = sorted(numbers)
-        if len(numbers) == 0:
-            count = 0
-        else:
-            count = numbers[-1]+1
-        foldername = str(count) + '_' + self.name
-        os.rename('logs', os.path.join('old_logs',foldername))
-        print("Tensorboard data is in : ./old_logs/" + foldername)
-
-
-
-    def train(self,train_directory_, validation_directory_,model_name,epochs):
-
+    def train(self,train_directory_, validation_directory_,model_description,epochs):
+        self.model_name += model_description
         #INITIALISE DATA INPUT
         datagen = ImageDataGenerator(
             rescale=1. / 255,
@@ -75,15 +59,14 @@ class NN(object):
 
         # train the model on the new data for a few epochs
         self.model.fit_generator(train_generator, validation_data=validate_generator,callbacks=[calls_.json_logging_callback,
-                                                             calls_.slack_callback,
-                                                             keras.callbacks.TerminateOnNaN(),
-                                                             keras.callbacks.ModelCheckpoint(filepath=os.path.join('checkpoints','intermediate.hdf5'),
+                                                             calls_.slack_callback,keras.callbacks.TerminateOnNaN(),
+                                                             keras.callbacks.ModelCheckpoint(filepath=INTERMEDIATE_FILE,
                                                                                              monitor='val_loss',
                                                                                              verbose=0,
                                                                                              save_best_only=False,
                                                                                              save_weights_only=False,
                                                                                              mode='auto', period=1),
-                                                             keras.callbacks.TensorBoard(log_dir='./logs',
+                                                             keras.callbacks.TensorBoard(log_dir=TENSORBOARD_LOGS_FOLDER,
                                                                                          histogram_freq=0,
                                                                                          batch_size=64,
                                                                                          write_graph=True,
@@ -95,7 +78,13 @@ class NN(object):
         # at this point, the top layers are well trained and we can start fine-tuning
         # convolutional layers from inception V3. We will freeze the bottom N layers
         # and train the remaining top layers.
-        self.clean_up_logs()
+        print("Model saved to " + os.path.join(MODEL_SAVE_FOLDER, self.model_name + "_Part_1" + '.hdf5'))
+        if not os.path.exists(MODEL_SAVE_FOLDER):
+            os.makedirs(MODEL_SAVE_FOLDER)
+        self.model.save(os.path.join(MODEL_SAVE_FOLDER, str(self.model_name + "_Part_1" '.hdf5')))
+        clean_up_logs(self.model_name + "_Part_1")
+        clean_up_json_logs(self.model_name + "_Part_1")
+        clean_up_models(self.model_name + "_Part_1")
         # let's visualize layer names and layer indices to see how many layers
         # we should freeze:
         for i, layer in enumerate(self.base_model.layers):
@@ -111,20 +100,20 @@ class NN(object):
         # we need to recompile the model for these modifications to take effect
         # we use SGD with a low learning rate
         from keras.optimizers import SGD
-        self.model.compile(optimizer=SGD(lr=0.0001, momentum=0.9), loss='categorical_crossentropy',metrics = ['accuracy'])
+        self.model.compile(optimizer=SGD(self.lr, momentum=0.9), loss='categorical_crossentropy',metrics = ['accuracy'])
 
         # we train our model again (this time fine-tuning the top 2 inception blocks
         # alongside the top Dense layers
         self.model.fit_generator(train_generator, validation_data=validate_generator,callbacks=[calls_.json_logging_callback,
                                                              calls_.slack_callback,
                                                              keras.callbacks.TerminateOnNaN(),
-                                                             keras.callbacks.ModelCheckpoint(filepath=os.path.join('checkpoints','intermediate.hdf5'),
+                                                             keras.callbacks.ModelCheckpoint(filepath=INTERMEDIATE_FILE,
                                                                                              monitor='val_loss',
                                                                                              verbose=0,
                                                                                              save_best_only=False,
                                                                                              save_weights_only=False,
                                                                                              mode='auto', period=1),
-                                                             keras.callbacks.TensorBoard(log_dir='./logs',
+                                                             keras.callbacks.TensorBoard(log_dir=TENSORBOARD_LOGS_FOLDER,
                                                                                          histogram_freq=0,
                                                                                          batch_size=64,
                                                                                          write_graph=True,
@@ -135,11 +124,14 @@ class NN(object):
                                                                                          embeddings_metadata=None)],epochs=epochs)
 
         current_directory = os.path.dirname(os.path.abspath(__file__))
-        print("Model saved to " + os.path.join(current_directory, os.path.pardir, "models", model_name + '.hdf5'))
-        if not os.path.exists("models"):
-            os.makedirs("models")
-        self.model.save(os.path.join("models",str(model_name + '.hdf5')))
-        self.clean_up_logs()
+        print("Model saved to " + os.path.join(MODEL_SAVE_FOLDER, self.model_name + "_Part_2" + '.hdf5'))
+        if not os.path.exists(MODEL_SAVE_FOLDER):
+            os.makedirs(MODEL_SAVE_FOLDER)
+        self.model.save(os.path.join(MODEL_SAVE_FOLDER,str(self.model_name + "_Part_2" '.hdf5')))
+
+        clean_up_logs(self.model_name + "_Part_2")
+        clean_up_json_logs(self.model_name + "_Part_2")
+        clean_up_models(self.model_name + "_Part_2")
 
     def predict(self,input_data):
         """

@@ -8,8 +8,8 @@ class DataGenerator(object):
       self.batch_size = batch_size
       self.shuffle = shuffle
       self.trainx, self.trainy = self.get_files(dir)
-      print(self.trainx)
-      print(self.trainy)
+      #print(self.trainx)
+      #print(self.trainy)
 
   def generate(self):
     while 1:
@@ -22,7 +22,7 @@ class DataGenerator(object):
           y = [self.trainy[k] for k in indexes[i*self.batch_size:(i+1)*self.batch_size]]
           # Generate data
           X = self.__data_generation(list_IDs_temp)
-          print(X.shape)
+          #print(X.shape)
           yield np.array(X), np.array(y)
 
   def get_files(self,dir):
@@ -54,7 +54,7 @@ class DataGenerator(object):
       X = np.empty((self.batch_size, 4,IM_HEIGHT, IM_WIDTH, 3))
       for i in range(len(list_IDs_temp)):
         #print(list_IDs_temp[i])
-        X[i,:,:,:,:] = dstack_folder(list_IDs_temp[i])/255
+        X[i,:,:,:,:] = (dstack_folder(list_IDs_temp[i])-127.5)/127.5
         #RESCALE!!!!!!!!!
       return X
 
@@ -67,11 +67,11 @@ def sparsify(y):
 
 
 
-
+'''
  # Parameters
 params = {'dir':'debug_folder_grouped','batch_size': 16,
                 'shuffle': True}
-DataGenerator(**params).generate()
+DataGenerator(**params).generate()'''
 '''
 params = {'dir':'validation_data','batch_size': 16,
                 'shuffle': True}

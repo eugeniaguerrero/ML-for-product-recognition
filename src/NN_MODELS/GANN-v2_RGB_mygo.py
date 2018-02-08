@@ -13,13 +13,13 @@ from src.common import *
 FOLDER_NUMBER = 0
 ITERATION = 0
 
-
 class WGANN(object):
     def __init__(self):
         RND = 777
         RUN = 'F'
         self.OUT_DIR = 'out/' + RUN
         self.TENSORBOARD_DIR = '/tensorboard/wgans/' + RUN
+        self.model_name = "WGANN"
         # GPU #
         self.GPU = "1"
         # latent vector size
@@ -367,6 +367,10 @@ class WGANN(object):
             if it % 10 == 0:
                 self.update_tb_summary(it, sample_images=(it % 10 == 0), save_image_files=True)
 
+        print("Model saved to " + os.path.join(MODEL_SAVE_FOLDER,self.model_name + '.hdf5'))
+        if not os.path.exists(MODEL_SAVE_FOLDER):
+            os.makedirs(MODEL_SAVE_FOLDER)
+        self.model.save(os.path.join(MODEL_SAVE_FOLDER, str(self.model_name + '.hdf5')))
 
 
 

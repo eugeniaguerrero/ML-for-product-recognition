@@ -1,7 +1,7 @@
 from keras.layers import Input, LSTM
 from keras.models import Model
 from src.DATA_PREPARATION.data_generator_time import *
-
+import keras
 from keras import backend as K
  #set learning phase
 K.set_learning_phase(1)
@@ -12,10 +12,11 @@ from keras.optimizers import SGD
 from keras.models import load_model
 from src.callbacks import *
 from src.DATA_PREPARATION.folder_manipulation import *
+from src.NN_MODELS.common_network_operations import *
 
-class NN(object):
-    def __init__(self,cached_model= None):
-        self.name = "vgg_net"
+class CNN_LSTM(object):
+    def __init__(self,lr=0.01,cached_model= None):
+        self.model_name = "vgg_net"
 
         # First, let's define a vision model using a Sequential model.
         # This model will encode an image into a vector.
@@ -44,25 +45,11 @@ class NN(object):
         if cached_model is not None:
             self.model = load_model(cached_model)
 
-        sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+        sgd = SGD(lr, decay=1e-6, momentum=0.9, nesterov=True)
         self.model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
 
-
-    def clean_up_logs(self):
-        if not os.path.exists('old_logs'):
-            os.makedirs('old_logs')
-        old_logs_list = os.listdir('old_logs')
-        numbers = []
-        for i in old_logs_list:
-            numbers.append(int(i.split('_')[0]))
-        numbers = sorted(numbers)
-        count = numbers[-1]+1
-        foldername = str(count) + '_' + self.name
-        os.rename('logs', os.path.join('old_logs',foldername))
-        print("Tensorboard data is in : ./old_logs/" + foldername)
-
-    def train(self,train_directory_, validation_directory_,model_name,epochs):
-
+    def train(self,train_directory_, validation_directory_,model_description,epochs):
+        self.model_name += model_description
         # Parameters
         params = {'dir': train_directory_, 'batch_size': 16,
                   'shuffle': True}
@@ -74,20 +61,19 @@ class NN(object):
         validation_generator = DataGenerator(**params).generate()
         # CHANGE THIS!!!
 
-
         calls_ = logs()
         self.model.fit_generator(training_generator, validation_data=validation_generator,
                                  callbacks=[calls_.json_logging_callback,
                                             calls_.slack_callback,
                                             keras.callbacks.TerminateOnNaN(),
                                             keras.callbacks.ModelCheckpoint(
-                                                filepath=os.path.join('checkpoints', 'intermediate.hdf5'),
+                                                filepath=INTERMEDIATE_FILE,
                                                 monitor='val_loss',
                                                 verbose=0,
                                                 save_best_only=False,
                                                 save_weights_only=False,
                                                 mode='auto', period=1),
-                                            keras.callbacks.TensorBoard(log_dir='./logs',
+                                            keras.callbacks.TensorBoard(log_dir=TENSORBOARD_LOGS_FOLDER,
                                                                         histogram_freq=0,
                                                                         batch_size=16,
                                                                         write_graph=True,
@@ -99,11 +85,13 @@ class NN(object):
                                                                                     validation_steps=56, epochs=epochs)
 
         current_directory = os.path.dirname(os.path.abspath(__file__))
-        print("Model saved to " + os.path.join(current_directory, os.path.pardir, "models", model_name + '.hdf5'))
-        if not os.path.exists("models"):
-            os.makedirs("models")
-        self.model.save(os.path.join("models",str(model_name + '.hdf5')))
-        self.clean_up_logs()
+        print("Model saved to " + os.path.join(current_directory, os.path.pardir,MODEL_SAVE_FOLDER,self.model_name + '.hdf5'))
+        if not os.path.exists(MODEL_SAVE_FOLDER):
+            os.makedirs(MODEL_SAVE_FOLDER)
+        self.model.save(os.path.join(MODEL_SAVE_FOLDER,str(self.model_name + '.hdf5')))
+        clean_up_logs(self.model_name)
+        clean_up_json_logs(self.model_name)
+        clean_up_models(self.model_name)
 
 
     def predict(self,input_data):
