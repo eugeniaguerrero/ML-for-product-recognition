@@ -4,10 +4,12 @@ import cv2
 import numpy as np
 import os
 from skimage.measure import compare_ssim
-# from histogram_equalisation import *
+from histogram_equalisation import *
+import time
 
 
 
+# need to remove .DS files
 def mse(imageA, imageB):
     # sum of the squared difference between the two images;
     err = np.sum((imageA.astype("float") - imageB.astype("float")) ** 2)
@@ -41,14 +43,6 @@ def convert_to_grey_image(image):
 def crop_image(img, individual_product):
 
     background_pixel = 255
-
-    # h_top = 950
-    # h_bottom = 150
-    # w_top = 950
-    # w_bottom = 0
-    #
-    # img = img[h_bottom : h_top, w_bottom : w_top]
-    # individual_product = individual_product[h_bottom : h_top, w_bottom : w_top]
 
     for row in np.arange(img.shape[0] - 1):
         if all(x == background_pixel for x in img[row, :]):
@@ -92,52 +86,54 @@ def kernel_compare(individual_product, next_product):
 
     # 1 means the pics are identical. Try 85
     ssim_threshold = 0.85
-
     # 0 means the images are identical. Try 25
     mse_threshold = 30
 
-    block_img = np.zeros((1024, 1280, 3))
-
+    gray_img = np.zeros((1024, 1280))
     # include this if we want to start with a white square
-    block_img.fill(255)
+    gray_img.fill(255)
+
+    grayA = cv2.cvtColor(individual_product, cv2.COLOR_BGR2GRAY)
+    grayB = cv2.cvtColor(next_product, cv2.COLOR_BGR2GRAY)
 
     for row in np.arange(im_h - bl_h + 1, step=bl_h):
         for col in np.arange(im_w - bl_w + 1, step=bl_w):
-            grayA = cv2.cvtColor(individual_product[row:row + bl_h, col:col + bl_w], cv2.COLOR_BGR2GRAY)
-            grayB = cv2.cvtColor(next_product[row:row + bl_h, col:col + bl_w], cv2.COLOR_BGR2GRAY)
+            grayA_kernel = grayA[row:row + bl_h, col:col + bl_w]
+            grayB_kernel = grayB[row:row + bl_h, col:col + bl_w]
 
-            (ssim_score, diff) = compare_ssim(grayA, grayB, full=True)
-            mse_score = mse(grayA, grayB)
+            (ssim_score, diff) = compare_ssim(grayA_kernel, grayB_kernel, full=True)
+            mse_score = mse(grayA_kernel, grayB_kernel)
 
             # checking to see if the pictures are different
             if (ssim_score < ssim_threshold) and (mse_score > mse_threshold):
-                block_img[row:row + bl_h, col:col + bl_w] = individual_product[row:row + bl_h, col:col + bl_w]
+                gray_img[row:row + bl_h, col:col + bl_w] = grayA[row:row + bl_h, col:col + bl_w]
 
 
-    block_img = block_img.astype(np.uint8)
-    gray_block_img = cv2.cvtColor(block_img, cv2.COLOR_BGR2GRAY)
-
+    gray_img = gray_img.astype(np.uint8)
 
     thresh = 254.9
-    gray_block_img = cv2.threshold(gray_block_img, thresh, 255, cv2.THRESH_BINARY_INV)[1]
+    gray_img = cv2.threshold(gray_img, thresh, 255, cv2.THRESH_BINARY_INV)[1]
 
 
-    _ , contours, _ = cv2.findContours(gray_block_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    _ , contours, _ = cv2.findContours(gray_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+    # if we have no contours then there is no difference between frames
+    if contours == []:
+        return individual_product
+
     largest_area = sorted(contours, key=cv2.contourArea)[-1]
 
 
     blank_block_img = np.zeros((1024, 1280, 3))
-    # include this if we want to start with a white square
     blank_block_img.fill(255)
-    # cv2.drawContours(block_img, contours, -1, (100, 0, 255), 2)
+    blank_block_img = np.uint8(blank_block_img)
+
     cv2.drawContours(blank_block_img, largest_area, -1, (100, 0, 255), 2)
 
-
-    blank_block_img = np.uint8(blank_block_img)
     grey_block_img = cv2.cvtColor(blank_block_img, cv2.COLOR_BGR2GRAY)
     cropped_block_img = crop_image(grey_block_img, individual_product)
-    cropped_block_img = increase_brightness(cropped_block_img, 30)
 
+    cropped_block_img = CLAHE_equalisation(cropped_block_img)
 
     return cropped_block_img
 
@@ -176,11 +172,12 @@ def frame_difference_collection(source, destination):
     i = 0
 
     for filename in sorted(os.listdir(source)):
-        print(filename)
-        i += 1
-        filepath = os.path.join(source, filename)
-        image = cv2.imread(filepath)
-        pictures.append(image)
+        if filename.endswith('.jpg') or filename.endswith('.png'):
+            print(filename)
+            i += 1
+            filepath = os.path.join(source, filename)
+            image = cv2.imread(filepath)
+            pictures.append(image)
 
     index = 0
     for pic in pictures:
@@ -194,7 +191,7 @@ def frame_difference_collection(source, destination):
         new_img = kernel_compare(individual_product, next_product)
         # new_img = contor_compare(individual_product, next_product)
 
-        individual_product = increase_brightness(individual_product, 30)
+        # individual_product = increase_brightness(individual_product, 30)
 
         file_name = str(index)+ '_' + filename
         original_file_name = str(index) + '_original_' +filename
@@ -212,7 +209,7 @@ difference = 'frame_difference_sample_data'
 
 topdir = 'sample_data'
 
-# topdir = 'test_data'
+# topdir = 'training_data'
 
 dir = os.getcwd()
 

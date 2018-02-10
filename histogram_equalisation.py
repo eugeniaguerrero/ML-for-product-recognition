@@ -17,7 +17,7 @@ def CLAHE_equalisation(img):
     return final
 
 
-photo_name = './histogram_test_images/orange2.jpg'
+photo_name = './orange2.jpg'
 img = cv2.imread(photo_name, 1)
 processed = CLAHE_equalisation(img)
 # cv2.imshow("ypp", img)
