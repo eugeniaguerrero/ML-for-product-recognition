@@ -1,6 +1,4 @@
-import numpy as np
-from common import *
-from folder_manipulation import *
+from src.DATA_PREPARATION.folder_manipulation_bandw import *
 
 class DataGenerator(object):
   'Generates data for Keras'
@@ -16,6 +14,7 @@ class DataGenerator(object):
         indexes = self.__get_exploration_order(self.trainx)
         # Generate batches
         imax = int(len(indexes)/self.batch_size)
+        #print(imax)
         for i in range(imax):
           # Find list of IDs
           list_IDs_temp = [self.trainx[k] for k in indexes[i*self.batch_size:(i+1)*self.batch_size]]
@@ -31,12 +30,14 @@ class DataGenerator(object):
     categories = []
     cat = 0
     for folder in folders:
-        image_names = get_folders(os.path.join(dir,folder))
+        image_names = get_image_names(os.path.join(dir,folder))
         for i in range(len(image_names)):
             images.append(os.path.join(dir,folder,image_names[i]))
             categories.append(cat)
+
         cat += 1
-    categories = sparsify(categories)
+    #CHANGED THIS
+    #categories = sparsify(categories)
     return images,categories
 
   def __get_exploration_order(self, list_IDs):
@@ -51,10 +52,10 @@ class DataGenerator(object):
       'Generates data of batch_size samples' # X : (n_samples, v_size, v_size, v_size, n_channels)
       # Initialization
       #X is 4 as time is 4 steps/ images per folder
-      X = np.empty((self.batch_size, 4,IM_HEIGHT, IM_WIDTH, 3))
+      #CHANGED THIS
+      X = np.empty((self.batch_size, IM_HEIGHT, IM_WIDTH, 1))
       for i in range(len(list_IDs_temp)):
-        #print(list_IDs_temp[i])
-        X[i,:,:,:,:] = dstack_folder(list_IDs_temp[i])/255
+        X[i,:,:,:] = (get_image(list_IDs_temp[i])-127.5)/255
         #RESCALE!!!!!!!!!
       return X
 
@@ -67,14 +68,18 @@ def sparsify(y):
 
 
 
-
+'''
  # Parameters
-params = {'dir':'training_data','batch_size': 16,
-                'shuffle': True}
-DataGenerator(**params).generate()
 params = {'dir':'validation_data','batch_size': 16,
                 'shuffle': True}
-DataGenerator(**params).generate()
+data_gen = DataGenerator(**params).generate()
+data_gen.__next__()
+'''
+
+'''
+params = {'dir':'validation_data','batch_size': 16,
+                'shuffle': True}
+DataGenerator(**params).generate()'''
 
 '''
 def sparsify(y):

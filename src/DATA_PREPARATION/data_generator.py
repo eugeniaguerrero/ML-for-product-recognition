@@ -1,6 +1,4 @@
-import numpy as np
-from common import *
-from folder_manipulation import *
+from src.DATA_PREPARATION.folder_manipulation import *
 
 class DataGenerator(object):
   'Generates data for Keras'
@@ -16,13 +14,14 @@ class DataGenerator(object):
         indexes = self.__get_exploration_order(self.trainx)
         # Generate batches
         imax = int(len(indexes)/self.batch_size)
-        print(imax)
+        #print(imax)
         for i in range(imax):
           # Find list of IDs
           list_IDs_temp = [self.trainx[k] for k in indexes[i*self.batch_size:(i+1)*self.batch_size]]
           y = [self.trainy[k] for k in indexes[i*self.batch_size:(i+1)*self.batch_size]]
           # Generate data
           X = self.__data_generation(list_IDs_temp)
+          #print(X.shape)
           yield np.array(X), np.array(y)
 
   def get_files(self,dir):
@@ -37,7 +36,8 @@ class DataGenerator(object):
             categories.append(cat)
 
         cat += 1
-    categories = sparsify(categories)
+    #CHANGED THIS
+    #categories = sparsify(categories)
     return images,categories
 
   def __get_exploration_order(self, list_IDs):
@@ -52,9 +52,10 @@ class DataGenerator(object):
       'Generates data of batch_size samples' # X : (n_samples, v_size, v_size, v_size, n_channels)
       # Initialization
       #X is 4 as time is 4 steps/ images per folder
+      #CHANGED THIS
       X = np.empty((self.batch_size, IM_HEIGHT, IM_WIDTH, 3))
       for i in range(len(list_IDs_temp)):
-        X[i,:,:,:] = get_image(list_IDs_temp[i])/255
+        X[i,:,:,:] = (get_image(list_IDs_temp[i])-127.5)/127.5
         #RESCALE!!!!!!!!!
       return X
 
@@ -71,7 +72,11 @@ def sparsify(y):
  # Parameters
 params = {'dir':'validation_data','batch_size': 16,
                 'shuffle': True}
-DataGenerator(**params).generate()
+data_gen = DataGenerator(**params).generate()
+for i in range(26):
+    data_gen.__next__()
+'''
+'''
 params = {'dir':'validation_data','batch_size': 16,
                 'shuffle': True}
 DataGenerator(**params).generate()'''
