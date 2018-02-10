@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from common import *
+from src.common import *
 import cv2
 
 def get_folders(directory_):
@@ -43,6 +43,5 @@ def dstack_folder(directory_):
         images = get_image(os.path.join(directory_,image_list[0]))
         for image in image_list[1:]:
             new_image = get_image(os.path.join(directory_, image_list[0]))
-
             images = np.concatenate((new_image,images),axis = 0)
     return images

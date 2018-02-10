@@ -1,0 +1,10 @@
+{"val_accuracy": 0.1625, "accuracy": 0.075, "epoch": 0, "loss": 2.302232551574707, "val_loss": 2.2817967891693116}
+{"val_accuracy": 0.1875, "accuracy": 0.1875, "epoch": 1, "loss": 2.2764844417572023, "val_loss": 2.258449649810791}
+{"val_accuracy": 0.225, "accuracy": 0.2625, "epoch": 2, "loss": 2.25169153213501, "val_loss": 2.2320271015167235}
+{"val_accuracy": 0.2125, "accuracy": 0.225, "epoch": 3, "loss": 2.2117159843444822, "val_loss": 2.1682079315185545}
+{"val_accuracy": 0.2375, "accuracy": 0.225, "epoch": 4, "loss": 2.1170986175537108, "val_loss": 1.9767125129699707}
+{"val_accuracy": 0.3625, "accuracy": 0.2375, "epoch": 5, "loss": 1.985153579711914, "val_loss": 1.8067081212997436}
+{"val_accuracy": 0.4125, "accuracy": 0.4, "epoch": 6, "loss": 1.7642422914505005, "val_loss": 1.5701071262359618}
+{"val_accuracy": 0.4125, "accuracy": 0.4, "epoch": 7, "loss": 1.623452639579773, "val_loss": 1.5235833168029784}
+{"val_accuracy": 0.5375, "accuracy": 0.425, "epoch": 8, "loss": 1.571415948867798, "val_loss": 1.5168379068374633}
+{"val_accuracy": 0.5125, "accuracy": 0.525, "epoch": 9, "loss": 1.3464937925338745, "val_loss": 1.4098985195159912}

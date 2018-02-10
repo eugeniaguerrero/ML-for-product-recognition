@@ -1,8 +1,7 @@
-import keras
 from keras.callbacks import LambdaCallback
 import json
 import requests
-from common import NUMBER_EPOCHS
+from src.common import *
 from math import ceil
 
 
@@ -17,7 +16,7 @@ class logs(object):
 
         self.counter = 0
 
-        self.json_log = open('loss_log.json', mode='wt', buffering=1)
+        self.json_log = open(JSON_LOG_FILE, mode='wt', buffering=1)
         self.json_logging_callback = LambdaCallback(
             on_epoch_end=lambda epoch, logs: self.json_log.write(
                 json.dumps({'epoch': epoch, 'loss': logs['loss'], 'accuracy': logs['acc']
@@ -33,19 +32,20 @@ class logs(object):
 
 
     def start_of_training(self,logs):
-        slack_data = {'text': "The wolf has started to prowl"}
-        webhook_url = 'https://hooks.slack.com/services/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'
-        self.counter = 0
-        self.json_log = open('loss_log.json', mode='wt', buffering=1)
-        response = requests.post(
-            webhook_url, data=json.dumps(slack_data),
-            headers={'Content-Type': 'application/json'}
-        )
-        if response.status_code != 200:
-            raise ValueError(
-                'Request to slack returned an error %s, the response is:\n%s'
-                % (response.status_code, response.text)
+        self.json_log = open(JSON_LOG_FILE, mode='wt', buffering=1)
+        if SEND_TO_SLACK:
+            slack_data = {'text': "The wolf has started to prowl"}
+            webhook_url = 'https://hooks.slack.com/services/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'
+            self.counter = 0
+            response = requests.post(
+                webhook_url, data=json.dumps(slack_data),
+                headers={'Content-Type': 'application/json'}
             )
+            if response.status_code != 200:
+                raise ValueError(
+                    'Request to slack returned an error %s, the response is:\n%s'
+                    % (response.status_code, response.text)
+                )
 
     def update_counter(self,epoch,logs):
         self.counter += 1
@@ -75,7 +75,25 @@ class logs(object):
         print("The percentage is " + percentage)
         print("The modulus is " + str(self.counter % ceil(NUMBER_EPOCHS/20)))
 
-        if self.counter % ceil(NUMBER_EPOCHS/20) == 0:
+        if SEND_TO_SLACK:
+            if self.counter % ceil(NUMBER_EPOCHS/20) == 0:
+                response = requests.post(
+                    webhook_url, data=json.dumps(slack_data),
+                    headers={'Content-Type': 'application/json'}
+                )
+                if response.status_code != 200:
+                    raise ValueError(
+                        'Request to slack returned an error %s, the response is:\n%s'
+                        % (response.status_code, response.text)
+                    )
+
+
+
+    def end_of_training(self, logs):
+        if SEND_TO_SLACK:
+            slack_data = {'text': "The wolf has ended its hunt"}
+            webhook_url = 'https://hooks.slack.com/services/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'
+
             response = requests.post(
                 webhook_url, data=json.dumps(slack_data),
                 headers={'Content-Type': 'application/json'}
@@ -85,22 +103,6 @@ class logs(object):
                     'Request to slack returned an error %s, the response is:\n%s'
                     % (response.status_code, response.text)
                 )
-
-
-
-    def end_of_training(self, logs):
-        slack_data = {'text': "The wolf has ended its hunt"}
-        webhook_url = 'https://hooks.slack.com/services/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'
-
-        response = requests.post(
-            webhook_url, data=json.dumps(slack_data),
-            headers={'Content-Type': 'application/json'}
-        )
-        if response.status_code != 200:
-            raise ValueError(
-                'Request to slack returned an error %s, the response is:\n%s'
-                % (response.status_code, response.text)
-            )
 
 """
     def start_training_notification(self):
