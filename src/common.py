@@ -1,13 +1,17 @@
 #File containing the main parameters used for the neural network
 import os
+
 #vgg_net images MUST BE DIVISIBLE BY 4!!!
-IM_HEIGHT = 100
-IM_WIDTH = 100
+IM_HEIGHT = 12
+IM_WIDTH = 12
 '''
 IM_HEIGHT = 299
 IM_WIDTH = 299'''
-NUMBER_CLASSES = 10
 NUMBER_EPOCHS = 3
+
+
+
+NUMBER_CLASSES = 10
 
 SEND_TO_SLACK = False
 
@@ -19,6 +23,7 @@ TENSORBOARD_OLD_LOGS_FOLDER = os.path.join('MODEL_OUTPUTS','old_logs')
 INTERMEDIATE_FILE = os.path.join('MODEL_OUTPUTS','checkpoints','intermediate.hdf5')
 JSON_LOG_FILE = os.path.join('MODEL_OUTPUTS','loss_log.json')
 JSON_OLD_LOGS_FOLDER = os.path.join('MODEL_OUTPUTS','old_json')
+NEW_IMAGE_FOLDER = os.path.join('MODEL_OUTPUTS','new_image_folder')
 
 SOURCE = os.path.join("DATA","product-image-dataset3")
 TRAIN_DATA = os.path.join("DATA","training_data")

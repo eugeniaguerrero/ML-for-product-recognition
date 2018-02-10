@@ -10,7 +10,7 @@ from src.callbacks import *
 from src.DATA_PREPARATION.folder_manipulation import *
 from src.NN_MODELS.common_network_operations import *
 
-class NN(object):
+class VGG(object):
     def __init__(self,lr=0.01,cached_model= None):
         self.model_name = "vgg_net"
         self.model = Sequential()
@@ -34,6 +34,7 @@ class NN(object):
             self.model = load_model(cached_model)
 
         sgd = SGD(lr, decay=1e-6, momentum=0.9, nesterov=True)
+        print(self.model.summary())
         self.model.compile(loss='categorical_crossentropy', optimizer=sgd,metrics = ['accuracy'])
 
     def train(self,train_directory_, validation_directory_,model_description,epochs):
@@ -60,7 +61,7 @@ class NN(object):
                                                                                              save_best_only=False,
                                                                                              save_weights_only=False,
                                                                                              mode='auto', period=1),
-                                                             keras.callbacks.TensorBoard(log_dir='./logs',
+                                                             keras.callbacks.TensorBoard(log_dir=TENSORBOARD_LOGS_FOLDER,
                                                                                          histogram_freq=0,
                                                                                          batch_size=16,
                                                                                          write_graph=True,
