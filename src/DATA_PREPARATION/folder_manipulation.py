@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from src.common import *
+from GroupProject.src.common import *
 import cv2
 
 def get_folders(directory_):

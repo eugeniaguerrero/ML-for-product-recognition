@@ -17,10 +17,10 @@ def CLAHE_equalisation(img):
     return final
 
 
-photo_name = './orange2.jpg'
-img = cv2.imread(photo_name, 1)
-processed = CLAHE_equalisation(img)
-# cv2.imshow("ypp", img)
-# cv2.waitKey(0)
-# cv2.destroyAllWindows()
-cv2.imwrite('processed2.jpg', processed)
+# photo_name = './orange2.jpg'
+# img = cv2.imread(photo_name, 1)
+# processed = CLAHE_equalisation(img)
+# # cv2.imshow("ypp", img)
+# # cv2.waitKey(0)
+# # cv2.destroyAllWindows()
+# cv2.imwrite('processed2.jpg', processed)

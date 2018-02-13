@@ -1,10 +1,10 @@
-from src.DATA_PREPARATION.folder_manipulation import *
+from GroupProject.src.DATA_PREPARATION.folder_manipulation import *
 import shutil
 import cv2
 import numpy as np
 import os
 from skimage.measure import compare_ssim
-from src.PREPROCESSING.histogram_equalisation import *
+from GroupProject.src.PREPROCESSING.histogram_equalisation import *
 import time
 from skimage.util.shape import view_as_blocks
 
@@ -149,6 +149,8 @@ difference = 'frame_difference_sample_data'
 topdir = 'training_data'
 
 dir = os.getcwd()
+print(dir)
+exit()
 
 if os.path.exists(difference):
     shutil.rmtree(difference)
