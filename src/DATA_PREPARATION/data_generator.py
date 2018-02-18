@@ -8,13 +8,14 @@ class DataGenerator(object):
       self.batch_size = batch_size
       self.shuffle = shuffle
       self.trainx, self.trainy = self.get_files(dir)
+      #print(self.trainx)
+      #print(self.trainy)
 
   def generate(self):
     while 1:
         indexes = self.__get_exploration_order(self.trainx)
         # Generate batches
         imax = int(len(indexes)/self.batch_size)
-        #print(imax)
         for i in range(imax):
           # Find list of IDs
           list_IDs_temp = [self.trainx[k] for k in indexes[i*self.batch_size:(i+1)*self.batch_size]]
@@ -30,14 +31,12 @@ class DataGenerator(object):
     categories = []
     cat = 0
     for folder in folders:
-        image_names = get_image_names(os.path.join(dir,folder))
+        image_names = get_folders(os.path.join(dir,folder))
         for i in range(len(image_names)):
             images.append(os.path.join(dir,folder,image_names[i]))
             categories.append(cat)
-
         cat += 1
-    #CHANGED THIS
-    #categories = sparsify(categories)
+    categories = sparsify(categories)
     return images,categories
 
   def __get_exploration_order(self, list_IDs):
@@ -52,10 +51,10 @@ class DataGenerator(object):
       'Generates data of batch_size samples' # X : (n_samples, v_size, v_size, v_size, n_channels)
       # Initialization
       #X is 4 as time is 4 steps/ images per folder
-      #CHANGED THIS
-      X = np.empty((self.batch_size, IM_HEIGHT, IM_WIDTH, 3))
+      X = np.empty((self.batch_size, 4,IM_HEIGHT, IM_WIDTH, 3))
       for i in range(len(list_IDs_temp)):
-        X[i,:,:,:] = (get_image(list_IDs_temp[i])-127.5)/127.5
+        #print(list_IDs_temp[i])
+        X[i,:,:,:,:] = (dstack_folder(list_IDs_temp[i])-127.5)/127.5
         #RESCALE!!!!!!!!!
       return X
 
@@ -70,12 +69,9 @@ def sparsify(y):
 
 '''
  # Parameters
-params = {'dir':'validation_data','batch_size': 16,
+params = {'dir':'debug_folder_grouped','batch_size': 16,
                 'shuffle': True}
-data_gen = DataGenerator(**params).generate()
-for i in range(26):
-    data_gen.__next__()
-'''
+DataGenerator(**params).generate()'''
 '''
 params = {'dir':'validation_data','batch_size': 16,
                 'shuffle': True}
