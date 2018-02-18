@@ -12,6 +12,7 @@ from src.NN_MODELS.common_network_operations import *
 class VGG(object):
     def __init__(self,lr=0.01,cached_model= None):
         self.model_name = "vgg_net"
+        self.model_input = (1, IM_HEIGHT, IM_WIDTH, NUMBER_CHANNELS)
         self.model = Sequential()
         # input: 100x100 images with 3 channels -> (100, 100, 3) tensors.
         # this applies 32 convolution filters of size 3x3 each.
@@ -43,7 +44,6 @@ class VGG(object):
             zoom_range=0.2,
             horizontal_flip=True)
 
-        test_datagen = ImageDataGenerator(rescale=1. / 255)
         calls_ = logs()
 
         train_generator = datagen.flow_from_directory(
@@ -75,10 +75,10 @@ class VGG(object):
                                                                                          write_images=True,
                                                                                          embeddings_freq=0,
                                                                                          embeddings_layer_names=None,
-                                                                                         embeddings_metadata=None)],epochs=10)
+                                                                                         embeddings_metadata=None)],epochs=epochs)
 
         current_directory = os.path.dirname(os.path.abspath(__file__))
-        print("Model saved to " + os.path.join(current_directory, os.path.pardir, MODEL_SAVE_FOLDER,self.model_name + '.hdf5'))
+        print("Model saved to " + os.path.join(current_directory, os.path.pardir, MODEL_SAVE_FOLDER,self.model_name) + '.hdf5')
         if not os.path.exists(MODEL_SAVE_FOLDER):
             os.makedirs(MODEL_SAVE_FOLDER)
         self.model.save(os.path.join(MODEL_SAVE_FOLDER,str(self.model_name + '.hdf5')))

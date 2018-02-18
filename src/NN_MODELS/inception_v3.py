@@ -11,6 +11,7 @@ from src.NN_MODELS.common_network_operations import *
 class INCEPTION_V3(object):
     def __init__(self,lr=0.0001,cached_model= None):
         self.model_name = "inception_v3"
+        self.model_input = (1, IM_HEIGHT, IM_WIDTH, NUMBER_CHANNELS)
         # create the base pre-trained model
         self.base_model = InceptionV3(weights='imagenet', include_top=False)
         # add a global spatial average pooling layer
@@ -132,6 +133,7 @@ class INCEPTION_V3(object):
         clean_up_logs(self.model_name + "_Part_2")
         clean_up_json_logs(self.model_name + "_Part_2")
         clean_up_models(self.model_name + "_Part_2")
+
 
     def predict(self,input_data):
         """

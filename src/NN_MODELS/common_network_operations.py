@@ -1,5 +1,7 @@
 from src.common import *
 
+#COMBINE ALL 3 into one??
+
 def clean_up_logs(model_name):
     if not os.path.exists(TENSORBOARD_OLD_LOGS_FOLDER):
         os.makedirs(TENSORBOARD_OLD_LOGS_FOLDER)

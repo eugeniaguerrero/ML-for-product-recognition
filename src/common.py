@@ -6,8 +6,13 @@ IM_WIDTH = 100
 '''
 IM_HEIGHT = 299
 IM_WIDTH = 299'''
+
+PRETRAINED_MODEL = False
 NUMBER_CLASSES = 10
+BATCH_SIZE = 16
 NUMBER_EPOCHS = 3
+NUMBER_CHANNELS = 3
+IMAGES_PER_FOLDER = 4
 
 SEND_TO_SLACK = False
 
@@ -24,6 +29,8 @@ SOURCE = os.path.join("DATA","product-image-dataset3")
 TRAIN_DATA = os.path.join("DATA","training_data")
 VALIDATE_DATA = os.path.join("DATA","validation_data")
 TEST_DATA = os.path.join("DATA","test_data")
+DEBUG_FOLDER = os.path.join("DATA","DEBUGGING_DATA","debug_folder")
+
 
 TRAIN_DATA_GROUPED = os.path.join("DATA","training_data_grouped")
 VALIDATE_DATA_GROUPED = os.path.join("DATA","validation_data_grouped")

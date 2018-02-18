@@ -20,8 +20,7 @@ class WGANN(object):
         self.OUT_DIR = 'out/' + RUN
         self.TENSORBOARD_DIR = '/tensorboard/wgans/' + RUN
         self.model_name = "WGANN"
-        # GPU #
-        self.GPU = "1"
+        self.model_input = (1, IM_HEIGHT, IM_WIDTH, NUMBER_CHANNELS)
         # latent vector size
         self.Z_SIZE = IM_WIDTH
         # number of iterations D is trained for per each G iteration
@@ -48,15 +47,9 @@ class WGANN(object):
         self.DG.get_layer('D').trainable = False  # freeze D in generator training faze
         self.DG.compile(optimizer=RMSprop(lr=0.00005),loss=[self.wasserstein, 'sparse_categorical_crossentropy'])
 
-
-
         if not os.path.isdir(self.OUT_DIR): os.makedirs(self.OUT_DIR)
         ##MAYBE DELETE THIS!!
         K.set_image_dim_ordering('tf')
-
-
-
-
 
     # basically return mean(y_pred),
     # but with ability to inverse it for minimization (when y_true == -1)
