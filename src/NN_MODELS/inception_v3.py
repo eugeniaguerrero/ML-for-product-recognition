@@ -41,13 +41,13 @@ class INCEPTION_V3(object):
         train_generator = datagen.flow_from_directory(
             train_directory_,
             target_size=(IM_HEIGHT, IM_WIDTH),
-            batch_size=32,
+            batch_size=BATCH_SIZE,
             class_mode="categorical")
 
         validate_generator = datagen.flow_from_directory(
             validation_directory_,
             target_size=(IM_HEIGHT, IM_WIDTH),
-            batch_size=32,
+            batch_size=BATCH_SIZE,
             class_mode="categorical")  # CHANGE THIS!!!
 
         # first: train only the top layers (which were randomly initialized)
@@ -69,7 +69,7 @@ class INCEPTION_V3(object):
                                                                                              mode='auto', period=1),
                                                              keras.callbacks.TensorBoard(log_dir=TENSORBOARD_LOGS_FOLDER,
                                                                                          histogram_freq=0,
-                                                                                         batch_size=64,
+                                                                                         batch_size=BATCH_SIZE,
                                                                                          write_graph=True,
                                                                                          write_grads=False,
                                                                                          write_images=True,
@@ -116,7 +116,7 @@ class INCEPTION_V3(object):
                                                                                              mode='auto', period=1),
                                                              keras.callbacks.TensorBoard(log_dir=TENSORBOARD_LOGS_FOLDER,
                                                                                          histogram_freq=0,
-                                                                                         batch_size=64,
+                                                                                         batch_size=BATCH_SIZE,
                                                                                          write_graph=True,
                                                                                          write_grads=False,
                                                                                          write_images=True,

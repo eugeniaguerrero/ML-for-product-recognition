@@ -42,12 +42,12 @@ class NN(object):
         self.model_name += model_description
 
         # Parameters
-        params = {'dir': train_directory_, 'batch_size': 16,
+        params = {'dir': train_directory_, 'batch_size': BATCH_SIZE,
                   'shuffle': True}
         # Generators
         training_generator = DataGenerator(**params).generate()
         # Parameters
-        params = {'dir': validation_directory_, 'batch_size': 16,
+        params = {'dir': validation_directory_, 'batch_size': BATCH_SIZE,
                   'shuffle': True}
         validation_generator = DataGenerator(**params).generate()
           # CHANGE THIS!!!
@@ -63,7 +63,7 @@ class NN(object):
                                                                                              mode='auto', period=1),
                                                              keras.callbacks.TensorBoard(log_dir='./logs',
                                                                                          histogram_freq=0,
-                                                                                         batch_size=16,
+                                                                                         batch_size=BATCH_SIZE,
                                                                                          write_graph=True,
                                                                                          write_grads=False,
                                                                                          write_images=True,

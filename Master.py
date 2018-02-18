@@ -1,6 +1,6 @@
 from src.NN_MODELS.cnn_lstm import *
 from src.NN_MODELS.inception_v3 import *
-from src.NN_MODELS.vgg_testing import *
+from src.NN_MODELS.vgg_net import *
 #from src.NN_MODELS. import *
 from src.common import *
 from src.NN_MODELS.network_tests import *
@@ -19,6 +19,10 @@ cnn_lstm_ = CNN_LSTM()
 cnn_lstm_.train(train_directory_='DATA/training_data_grouped', validation_directory_='DATA/training_data_grouped',model_description= '', epochs=NUMBER_EPOCHS)
 '''
 
+
+vgg_ = VGG()
+debug(vgg_)
+'''
 #TEST 1 - vgg normal data
 TRAIN_DATA = os.path.join("DATA","training_data")
 VALIDATE_DATA = os.path.join("DATA","training_data")
@@ -78,7 +82,7 @@ keras.preprocessing.image.ImageDataGenerator(
 
 vgg_ = VGG()
 vgg_.train(train_directory_=TRAIN_DATA, validation_directory_=VALIDATE_DATA, model_description= 'normal_data+preprocessing', epochs=NUMBER_EPOCHS,datagen=datagen)
-
+'''
 '''
 inception_v3_ = INCEPTION_V3()
 inception_v3_.train(train_directory_='DATA/training_data', validation_directory_='DATA/training_data', model_description= '', epochs=NUMBER_EPOCHS)

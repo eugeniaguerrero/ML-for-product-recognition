@@ -48,14 +48,14 @@ class VGG(object):
 
         train_generator = datagen.flow_from_directory(
             train_directory_,
-            target_size=(100, 100),
-            batch_size=32,
+            target_size=(IM_HEIGHT, IM_WIDTH),
+            batch_size=BATCH_SIZE,
             class_mode="categorical")
 
         validate_generator = datagen.flow_from_directory(
             validation_directory_,
-            target_size=(100, 100),
-            batch_size=32,
+            target_size=(IM_HEIGHT, IM_WIDTH),
+            batch_size=BATCH_SIZE,
             class_mode="categorical")  # CHANGE THIS!!!
 
         self.model.fit_generator(train_generator, validation_data=validate_generator,callbacks=[calls_.json_logging_callback,
@@ -69,7 +69,7 @@ class VGG(object):
                                                                                              mode='auto', period=1),
                                                              keras.callbacks.TensorBoard(log_dir=TENSORBOARD_LOGS_FOLDER,
                                                                                          histogram_freq=0,
-                                                                                         batch_size=64,
+                                                                                         batch_size=BATCH_SIZE,
                                                                                          write_graph=True,
                                                                                          write_grads=False,
                                                                                          write_images=True,

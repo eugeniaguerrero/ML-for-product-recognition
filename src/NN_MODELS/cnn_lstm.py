@@ -20,9 +20,9 @@ class CNN_LSTM(object):
         self.model_name = "vgg_net"
         self.model_input = (1,IMAGES_PER_FOLDER,IM_HEIGHT,IM_WIDTH,NUMBER_CHANNELS)
 
-        video_input = Input(shape=(IMAGES_PER_FOLDER, IM_HEIGHT, IM_WIDTH, NUMBER_CHANNELS))
+
         self.cnnmodel = Sequential()
-        self.cnnmodel.add(Conv2D(32, (3, 3), activation='relu', input_shape=(IM_HEIGHT, IM_WIDTH, 3)))
+        self.cnnmodel.add(Conv2D(32, (3, 3), activation='relu', input_shape=(IM_HEIGHT, IM_WIDTH, NUMBER_CHANNELS)))
         self.cnnmodel.add(Conv2D(32, (3, 3), activation='relu'))
         self.cnnmodel.add(MaxPooling2D(pool_size=(2, 2)))
         self.cnnmodel.add(Dropout(0.25))
@@ -31,6 +31,8 @@ class CNN_LSTM(object):
         self.cnnmodel.add(MaxPooling2D(pool_size=(2, 2)))
         self.cnnmodel.add(Dropout(0.25))
         self.cnnmodel.add(Flatten())
+
+        video_input = Input(shape=(IMAGES_PER_FOLDER, IM_HEIGHT, IM_WIDTH, NUMBER_CHANNELS))
 
         encoded_frame_sequence = TimeDistributed(self.cnnmodel)(video_input) # the output will be a sequence of vectors
         encoded_video = LSTM(256)(encoded_frame_sequence)  # the output will be one vector
@@ -71,7 +73,7 @@ class CNN_LSTM(object):
                                                 mode='auto', period=1),
                                             keras.callbacks.TensorBoard(log_dir=TENSORBOARD_LOGS_FOLDER,
                                                                         histogram_freq=0,
-                                                                        batch_size=16,
+                                                                        batch_size=BATCH_SIZE,
                                                                         write_graph=True,
                                                                         write_grads=False,
                                                                         write_images=True,

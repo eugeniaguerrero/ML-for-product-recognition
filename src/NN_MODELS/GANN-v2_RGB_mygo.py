@@ -25,7 +25,7 @@ class WGANN(object):
         self.Z_SIZE = IM_WIDTH
         # number of iterations D is trained for per each G iteration
         self.D_ITERS = 5
-        self.BATCH_SIZE = 50
+        self.BATCH_SIZE = BATCH_SIZE
         self.ITERATIONS = 25000
         self.NO_CHANNELS = 3
         self.DG_losses = []
