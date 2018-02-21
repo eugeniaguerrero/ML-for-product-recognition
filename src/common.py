@@ -28,3 +28,4 @@ TEST_DATA = os.path.join("DATA","test_data")
 TRAIN_DATA_GROUPED = os.path.join("DATA","training_data_grouped")
 VALIDATE_DATA_GROUPED = os.path.join("DATA","validation_data_grouped")
 TEST_DATA_GROUPED = os.path.join("DATA","test_data_grouped")
+
