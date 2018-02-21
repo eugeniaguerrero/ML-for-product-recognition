@@ -44,7 +44,7 @@ def dstack_folder(directory_):
     return images
 
 
-def dstack_folder_two(directory_, sequence_length):
+def dstack_folder_sequence(directory_, sequence_length):
     image_list = get_image_names(directory_)
     if sequence_length != 1 and len(image_list) != sequence_length:
         print("Incompatible sequence {}".format(directory_))
