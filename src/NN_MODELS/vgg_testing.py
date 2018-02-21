@@ -37,15 +37,8 @@ class VGG(object):
         sgd = SGD(lr, decay=1e-6, momentum=0.9, nesterov=True)
         self.model.compile(loss='categorical_crossentropy', optimizer=sgd,metrics = ['accuracy'])
 
-    def train(self,train_directory_, validation_directory_,model_description,epochs,datagen):
+    def train(self,train_directory_, validation_directory_,model_description,epochs,datagen,datagenval):
         self.model_name += model_description
-
-        datagen = ImageDataGenerator(
-            rescale=1. / 255,
-            shear_range=0.2,
-            zoom_range=0.2,
-            horizontal_flip=True)
-
 
         test_datagen = ImageDataGenerator(rescale=1. / 255)
         calls_ = logs()
@@ -56,7 +49,7 @@ class VGG(object):
             batch_size=BATCH_SIZE,
             class_mode="categorical")
 
-        validate_generator = datagen.flow_from_directory(
+        validate_generator = datagenval.flow_from_directory(
             validation_directory_,
             target_size=(IM_HEIGHT, IM_WIDTH),
             batch_size=BATCH_SIZE,
@@ -86,9 +79,7 @@ class VGG(object):
         if not os.path.exists(MODEL_SAVE_FOLDER):
             os.makedirs(MODEL_SAVE_FOLDER)
         self.model.save(os.path.join(MODEL_SAVE_FOLDER,str(self.model_name + '.hdf5')))
-        clean_up_logs(self.model_name)
-        clean_up_json_logs(self.model_name)
-        clean_up_models(self.model_name)
+        clean_up(self.model_name)
 
 
 

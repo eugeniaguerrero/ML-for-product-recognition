@@ -35,7 +35,7 @@ datagenval = ImageDataGenerator(
     zoom_range=0.2,
     horizontal_flip=True)
 
-for image_size in [50,100,150,200,250,300,350,400,450,500]:
+for image_size in [300]:
     IM_HEIGHT = image_size
     IM_WIDTH = image_size
     vgg_ = VGG()

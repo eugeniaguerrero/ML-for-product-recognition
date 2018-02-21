@@ -26,9 +26,9 @@ JSON_LOG_FILE = os.path.join('MODEL_OUTPUTS','loss_log.json')
 JSON_OLD_LOGS_FOLDER = os.path.join('MODEL_OUTPUTS','old_json')
 
 SOURCE = os.path.join("DATA","product-image-dataset3")
-TRAIN_DATA = os.path.join("DATA","training_data")
-VALIDATE_DATA = os.path.join("DATA","validation_data")
-TEST_DATA = os.path.join("DATA","test_data")
+TRAIN_DATA = os.path.join("DATA","ftraining_data")
+VALIDATE_DATA = os.path.join("DATA","fvalidation_data")
+TEST_DATA = os.path.join("DATA","ftest_data")
 DEBUG_FOLDER = os.path.join("DATA","DEBUGGING_DATA","debug_folder")
 
 
