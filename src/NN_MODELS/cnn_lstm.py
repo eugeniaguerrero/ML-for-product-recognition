@@ -16,10 +16,10 @@ from src.NN_MODELS.common_network_operations import *
 from keras.layers import TimeDistributed
 
 class CNN_LSTM(object):
-    def __init__(self,lr=0.01,cached_model= None):
+    def __init__(self,output = True,lr=0.01,cached_model= None):
         self.model_name = "vgg_net"
+        self.output = output
         self.model_input = (1,IMAGES_PER_FOLDER,IM_HEIGHT,IM_WIDTH,NUMBER_CHANNELS)
-
 
         self.cnnmodel = Sequential()
         self.cnnmodel.add(Conv2D(32, (3, 3), activation='relu', input_shape=(IM_HEIGHT, IM_WIDTH, NUMBER_CHANNELS)))
@@ -99,6 +99,10 @@ class CNN_LSTM(object):
         input_data = input_data / 255
         predictions = self.model.predict(input_data, verbose=False)
         return np.array(predictions[0])
+
+
+    def return_weights(self,layer):
+        return self.model.layers[layer].get_weights()
 
 
 

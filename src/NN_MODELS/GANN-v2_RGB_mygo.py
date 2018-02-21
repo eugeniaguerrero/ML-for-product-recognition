@@ -14,9 +14,10 @@ FOLDER_NUMBER = 0
 ITERATION = 0
 
 class WGANN(object):
-    def __init__(self):
+    def __init__(self, output = True):
         RND = 777
         RUN = 'F'
+        self.output = output
         self.OUT_DIR = 'out/' + RUN
         self.TENSORBOARD_DIR = '/tensorboard/wgans/' + RUN
         self.model_name = "WGANN"
@@ -364,7 +365,6 @@ class WGANN(object):
         if not os.path.exists(MODEL_SAVE_FOLDER):
             os.makedirs(MODEL_SAVE_FOLDER)
         self.model.save(os.path.join(MODEL_SAVE_FOLDER, str(self.model_name + '.hdf5')))
-
 
 
 wg = WGANN()

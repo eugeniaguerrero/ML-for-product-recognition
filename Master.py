@@ -3,7 +3,7 @@ from src.NN_MODELS.inception_v3 import *
 from src.NN_MODELS.vgg_net import *
 #from src.NN_MODELS. import *
 from src.common import *
-from src.NN_MODELS.network_tests import *
+#from src.NN_MODELS.network_tests import *
 from src.DATA_PREPARATION.partition_grouped import *
 from src.DATA_PREPARATION.partition_grouped_folders import *
 import keras
@@ -21,7 +21,7 @@ cnn_lstm_.train(train_directory_='DATA/training_data_grouped', validation_direct
 
 
 vgg_ = VGG()
-debug(vgg_)
+vgg_.train(train_directory_=DEBUG_FOLDER, validation_directory_=DEBUG_FOLDER, model_description= 'normal_data+preprocessing', epochs=NUMBER_EPOCHS)
 '''
 #TEST 1 - vgg normal data
 TRAIN_DATA = os.path.join("DATA","training_data")

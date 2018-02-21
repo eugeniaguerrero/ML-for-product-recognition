@@ -11,8 +11,9 @@ from src.DATA_PREPARATION.folder_manipulation import *
 from src.NN_MODELS.common_network_operations import *
 
 class NN(object):
-    def __init__(self,lr=0.01,cached_model= None):
+    def __init__(self,output = True,lr=0.01,cached_model= None):
         self.model_name = "vgg_net"
+        self.output = output
         self.model = Sequential()
         self.model_input = (1, IM_HEIGHT, IM_WIDTH, NUMBER_CHANNELS)
         # input: 100x100 images with 3 channels -> (100, 100, 3) tensors.
@@ -96,47 +97,7 @@ class NN(object):
         return np.array(predictions[0])
 
 
-    def debug(self,directory_):
-
-        #Test 1 check if untrained model returns uniform predictions
-        folders = get_folders(directory_)
-        image_list = get_image_names(os.path.join(directory_, folders[0]))
-        filepath = os.path.join(directory_,folders[0],image_list[0])
-        resized_image = get_image(filepath)
-        predictions = self.predict(resized_image)
-
-        if np.max(predictions) - np.min(predictions) > 0.1:
-            print("Starting with a pre-trained model")
-        else:
-            print("Starting without a pre-trained model")
-        print("Initial predictions are:")
-        print(predictions)
-
-        #Test 2 see if accuracy goes very quickly to 1 on 1 image
-        self.train(directory_,'debugging_model',10)
-
-    def find_incorrect_classifications(self,directory_):
-        incpred = "incorrect_predictions"
-        if not os.path.exists(incpred):
-            os.makedirs(incpred)
-
-        # Test 1 check if untrained model returns uniform predictions
-        folders = get_folders(directory_)
-        category = 0
-        import shutil
-        for folder in folders:
-
-            if not os.path.exists(os.path.join(incpred,folder)):
-                os.makedirs(os.path.join(incpred,folder))
-
-            image_list = get_image_names(os.path.join(directory_, folder))
-            for image in image_list:
-                filepath = os.path.join(directory_,folder,image)
-                resized_image = get_image(filepath)
-                predictions = self.predict(resized_image)
-
-                if np.argmax(predictions) != category:
-                    fileto = os.path.join(incpred,folder,image)
-                    shutil.copyfile(filepath,fileto)
+    def return_weights(self,layer):
+        return self.model.get_weights(layer)
 
 
