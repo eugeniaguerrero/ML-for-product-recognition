@@ -33,7 +33,7 @@ class TestNetwork(unittest.TestCase):
             self.assertTrue(max(predictions) == min(predictions) & predictions[0] == 0)
             print("TESTING COMPLETE - commencing training...")
 
-    def test_untrained_net(self):
+    def test_untrainednet(self):
 
         Networks = [VGG(output = False), INCEPTION_V3(output = False)]
 
