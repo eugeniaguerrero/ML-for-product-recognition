@@ -3,6 +3,8 @@ import os
 #vgg_net images MUST BE DIVISIBLE BY 4!!!
 IM_HEIGHT = 100
 IM_WIDTH = 100
+RAW_HEIGHT = 1024
+RAW_WIDTH = 1280
 '''
 IM_HEIGHT = 299
 IM_WIDTH = 299'''

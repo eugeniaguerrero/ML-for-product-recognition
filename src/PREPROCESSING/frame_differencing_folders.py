@@ -9,12 +9,12 @@ from src.DATA_PREPARATION.folder_manipulation import *
 from src.PREPROCESSING.histogram_equalisation import *
 
 
-def mse(imageA, imageB):
-    # sum of the squared difference between the two images;
-    err = np.sum((imageA.astype("float") - imageB.astype("float")) ** 2)
-    err /= float(imageA.shape[0] * imageA.shape[1])
-    # return the MSE, the lower the error, the more "similar"
-    return err
+# def mse(imageA, imageB):
+#     # sum of the squared difference between the two images;
+#     err = np.sum((imageA.astype("float") - imageB.astype("float")) ** 2)
+#     err /= float(imageA.shape[0] * imageA.shape[1])
+#     # return the MSE, the lower the error, the more "similar"
+#     return err
 
 def square_border(img):
     if img.shape[0] > img.shape[1]:
@@ -29,14 +29,15 @@ def square_border(img):
     return bordered_img
 
 def img_exception(img):
-    #return False
     height = img.shape[0]
     width = img.shape[1]
 
+    # if checks whether the image has not been cropped (i.e. not frame differenced)
     if (height == RAW_HEIGHT) and (width == RAW_WIDTH):
         return True
 
-    if (height < IM_HEIGHT) or (width < IM_WIDTH):
+    # any image cropped to below this size will be raised as an exception
+    if (height < 200) or (width < 200):
         return True
 
     return False
@@ -59,9 +60,9 @@ def kernel_compare(individual_product, next_product):
     gray_img.fill(white)
     gray_img = gray_img.astype(np.uint8)
 
-    color_img = np.zeros((im_h, im_w, 3))
-    color_img.fill(white)
-    color_img = color_img.astype(np.uint8)
+    # color_img = np.zeros((im_h, im_w, 3))
+    # color_img.fill(white)
+    # color_img = color_img.astype(np.uint8)
 
     grayA = cv2.cvtColor(individual_product, cv2.COLOR_BGR2GRAY)
     grayB = cv2.cvtColor(next_product, cv2.COLOR_BGR2GRAY)
@@ -76,7 +77,8 @@ def kernel_compare(individual_product, next_product):
             # checking to see if the pictures are different
             if (ssim_score < ssim_threshold):
                 gray_img[row:row + bl_h, col:col + bl_w] = grayA[row:row + bl_h, col:col + bl_w]
-                color_img[row:row + bl_h, col:col + bl_w] = individual_product[row:row + bl_h, col:col + bl_w]
+                #color_img[row:row + bl_h, col:col + bl_w] = individual_product[row:row + bl_h, col:col + bl_w]
+
 
     thresh = 254.9
     threshold_img = cv2.threshold(gray_img, thresh, white, cv2.THRESH_BINARY_INV)[1]
@@ -164,7 +166,7 @@ def frame_difference_collection(source, destination, exceptions):
             filepath = os.path.join(source, filename)
             image = cv2.imread(filepath)
             # pictures[i, ...] = image
-            if image.shape[0] == RAW_HEIGHT and image.shape[1] == RAW_HEIGHT:
+            if image.shape[0] == RAW_HEIGHT and image.shape[1] == RAW_WIDTH:
                 pictures[i] = image
                 i += 1
 
@@ -192,57 +194,51 @@ def frame_difference_collection(source, destination, exceptions):
 
             cv2.imwrite(os.path.join(destination, file_name), new_img)
             # include for comparison
-            cv2.imwrite(os.path.join(destination, original_file_name), individual_product)
+            # cv2.imwrite(os.path.join(destination, original_file_name), individual_product)
         index += 1
 
 
-def main_diff(folder_set):
+def main_diff(folder_set, data_path):
+    print(data_path)
     my_count = 0
-
-    dir = os.getcwd()
-    src_dir = os.path.dirname(dir)
-    Group_dir = os.path.dirname(src_dir)
-    data_folder = 'DATA'
 
     # ensure that folder exist
     for folder in folder_set:
-        my_folder = os.path.join(Group_dir, data_folder, folder)
-        print("my_folder", my_folder)
-        # if not(os.path.exists(my_folder)):
-        #     print(folder, " does not exist")
-        #     exit(1)
-        assert (os.path.exists(my_folder)), " folder does not exist"
+        my_folder = os.path.join(data_path, folder)
+        assert (os.path.exists(my_folder))
 
     # loop on training, validation and testing
     for folder in folder_set:
         difference_set = 'FD_' + folder
-        my_folder = os.path.join(Group_dir, data_folder, difference_set)
+        my_folder = os.path.join(data_path, difference_set)
+
         if os.path.exists(my_folder):
             shutil.rmtree(my_folder)
         os.makedirs(my_folder)
 
-        data_set = os.path.join(Group_dir, data_folder, folder)
+        data_set = os.path.join(data_path, folder)
         class_folders = get_folders(data_set)
+        assert (len(class_folders) > 0)
 
         exceptions = 'Exceptions_' + folder
-        my_exceptions = os.path.join(Group_dir, data_folder, exceptions)
+        my_exceptions = os.path.join(data_path, exceptions)
 
         if os.path.exists(my_exceptions):
             shutil.rmtree(my_exceptions)
         os.makedirs(my_exceptions)
 
-
         # loop on class folders
         for class_set in class_folders:
             class_folder = os.path.join(data_set, class_set)
 
-            diff_class_folder = os.path.join(Group_dir, data_folder, difference_set, class_set)
+            diff_class_folder = os.path.join(data_path, difference_set, class_set)
             os.makedirs(diff_class_folder)
 
-            exceptions_class_folder = os.path.join(Group_dir, data_folder, exceptions, class_set)
+            exceptions_class_folder = os.path.join(data_path, exceptions, class_set)
             os.makedirs(exceptions_class_folder)
 
             product_video_set = get_folders(class_folder)
+            assert (len(product_video_set) > 0)
 
             # loop on video sets
             for video in product_video_set:
@@ -251,17 +247,25 @@ def main_diff(folder_set):
                 os.makedirs(diff_video_folder)
                 frame_difference_collection(video_folder, diff_video_folder, exceptions_class_folder)
                 my_count = my_count + 1
-                # avg_time = (time.time() - start_run)/my_count
-                # print("Avg time per set:", avg_time)
+                    # avg_time = (time.time() - start_run)/my_count
+                    # print("Avg time per set:", avg_time)
+    return True
 
 if __name__ == "__main__":
     start_run = time.time()
     print("Start Run")
     # The directory where the augmented images are going to be saved
-    # my_folders = ['training_data', 'validation_data', 'test_data']
-    my_folders = ['sample1']
 
-    main_diff(my_folders)
+    dir = os.getcwd()
+    src_dir = os.path.dirname(dir)
+    Group_dir = os.path.dirname(src_dir)
+    data_folder = 'DATA'
+    data_path = os.path.join(Group_dir, data_folder)
+
+    #my_folders = ['test_data', 'training_data', 'validation_data']
+    my_folders = ['testing']
+
+    main_diff(my_folders, data_path)
 
     end_run = time.time()
     print("Total Run Time (mins): ", (end_run - start_run)/60)
