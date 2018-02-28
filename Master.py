@@ -21,6 +21,6 @@ cnn_lstm_.train(train_directory_='DATA/training_data', validation_directory_='DA
 #vgg_.train(train_directory_='DATA/training_data', validation_directory_='DATA/training_data', model_description= '', epochs=NUMBER_EPOCHS)
 
 inception_v3_ = INCEPTION_V3()
-inception_v3_.train(train_directory_='DATA/training_data', validation_directory_='DATA/validation_data', model_description= '', epochs=NUMBER_EPOCHS)
+inception_v3_.train(train_directory_= TRAIN_DATA, validation_directory_= VALIDATE_DATA, model_description= '', epochs=NUMBER_EPOCHS)
 
 

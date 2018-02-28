@@ -28,9 +28,7 @@ class Preprocessing:
         #resize from 5d to 4d
         preprocessed_images = picture_batch
         if self.histogram_equalisation_:
-
             preprocessed_images = CLAHE_equalisation(preprocessed_images)
-            print("Normalising")
 
         if self.rotation_ == True:
              preprocessed_images = random_rotation(preprocessed_images, self.rotation_degrees_, 0, 1, 2)
@@ -41,33 +39,18 @@ class Preprocessing:
         if self.vertical_flip_ == True:
             preprocessed_images = flip_vertical(preprocessed_images)
 
-
-
         return preprocessed_images
 
-    #def output_one_image(self):
-    #    cv2.imwrite("Preprocessed.jpeg", self.picture_batch_[0])
+
+
+#def output_one_image(self):
+#    cv2.imwrite("Preprocessed.jpeg", self.picture_batch_[0])
 
 # # #Testing whether preprocessing works
 # pictures_batch = dstack_folder(os.path.join("DATA","validation_data","5055540026268","VID26"))
 # preprocessing = Preprocessing(pictures_batch, rotation=True, rotation_degrees=30)
 # preprocessing.output_one_image()
 # cv2.imwrite("Original.jpeg", pictures_batch[0])
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

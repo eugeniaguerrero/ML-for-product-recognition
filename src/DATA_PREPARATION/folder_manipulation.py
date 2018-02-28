@@ -43,11 +43,10 @@ def dstack_folder(directory_):
             images = np.concatenate([new_image,images],axis = 0)
     return images
 
-
 def dstack_folder_sequence(directory_, sequence_length):
     image_list = get_image_names(directory_)
-    if sequence_length != 1 and len(image_list) != sequence_length:
-        print("Incompatible sequence {}".format(directory_))
+    if len(image_list) != sequence_length:
+        print("Invalid number of images in {}".format(directory_))
         return
 
     images = get_image(os.path.join(directory_, image_list[0]))

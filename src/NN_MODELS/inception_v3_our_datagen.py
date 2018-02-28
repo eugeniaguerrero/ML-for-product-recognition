@@ -47,27 +47,29 @@ class INCEPTION_V3(object):
 
         # NOTE NO SCALING APPLIED YET!
         params_val = {'dir': validation_directory_,
-                  'batch_size': 32,
-                  'shuffle': True,
-                  'sequence_length' : 1}
+                      'batch_size': 32,
+                      'shuffle': True,
+                      'sequence_length' : 4,
+                      'time_distributed' : False}
 
         validation_generator = DataGenerator(**params_val)
         validate_gen = validation_generator.generate()
 
         params_train = {'dir': train_directory_,
-                      'batch_size': 32,
-                      'shuffle': True,
-                      'sequence_length': 1}
+                        'batch_size': 32,
+                        'shuffle': True,
+                        'sequence_length': 4,
+                        'time_distributed' : False}
 
         train_generator = DataGenerator(**params_train)
         train_gen = train_generator.generate()
 
         #CHECKS!################
-        test_in = train_gen.__next__()
-        test_in_val = validate_gen.__next__()
+        #test_in = train_gen.__next__()
+        #test_in_val = validate_gen.__next__()
 
-        steps_per_epoch_ =  train_generator.steps_per_epoch_  # 489
-        validation_steps_ = validation_generator.steps_per_epoch_ # 56
+        steps_per_epoch_ =  train_generator.batches_per_epoch  # 489
+        validation_steps_ = validation_generator.batches_per_epoch # 56
         ##########################
 
         calls_ = logs()
@@ -81,23 +83,7 @@ class INCEPTION_V3(object):
         self.model.compile(optimizer='rmsprop', loss='categorical_crossentropy',metrics = ['accuracy'])
 
         # train the model on the new data for a few epochs
-        self.model.fit_generator(train_gen, validation_data=validate_gen,callbacks=[calls_.json_logging_callback,
-                                                             calls_.slack_callback,keras.callbacks.TerminateOnNaN(),
-                                                             keras.callbacks.ModelCheckpoint(filepath=INTERMEDIATE_FILE,
-                                                                                             monitor='val_loss',
-                                                                                             verbose=0,
-                                                                                             save_best_only=False,
-                                                                                             save_weights_only=False,
-                                                                                             mode='auto', period=1),
-                                                             keras.callbacks.TensorBoard(log_dir=TENSORBOARD_LOGS_FOLDER,
-                                                                                         histogram_freq=0,
-                                                                                         batch_size=64,
-                                                                                         write_graph=True,
-                                                                                         write_grads=False,
-                                                                                         write_images=True,
-                                                                                         embeddings_freq=0,
-                                                                                         embeddings_layer_names=None,
-                                                                                         embeddings_metadata=None)],epochs=epochs, steps_per_epoch= steps_per_epoch_, validation_steps=validation_steps_)
+        self.model.fit_generator(train_gen, validation_data=validate_gen,epochs=epochs, steps_per_epoch= steps_per_epoch_, validation_steps=validation_steps_)
         # at this point, the top layers are well trained and we can start fine-tuning
         # convolutional layers from inception V3. We will freeze the bottom N layers
         # and train the remaining top layers.
@@ -127,30 +113,13 @@ class INCEPTION_V3(object):
 
         # we train our model again (this time fine-tuning the top 2 inception blocks
         # alongside the top Dense layers
-        self.model.fit_generator(train_generator, validation_data=validate_generator,callbacks=[calls_.json_logging_callback,
-                                                             calls_.slack_callback,
-                                                             keras.callbacks.TerminateOnNaN(),
-                                                             keras.callbacks.ModelCheckpoint(filepath=INTERMEDIATE_FILE,
-                                                                                             monitor='val_loss',
-                                                                                             verbose=0,
-                                                                                             save_best_only=False,
-                                                                                             save_weights_only=False,
-                                                                                             mode='auto', period=1),
-                                                             keras.callbacks.TensorBoard(log_dir=TENSORBOARD_LOGS_FOLDER,
-                                                                                         histogram_freq=0,
-                                                                                         batch_size=64,
-                                                                                         write_graph=True,
-                                                                                         write_grads=False,
-                                                                                         write_images=True,
-                                                                                         embeddings_freq=0,
-                                                                                         embeddings_layer_names=None,
-                                                                                         embeddings_metadata=None)],epochs=epochs)
+        self.model.fit_generator(train_gen, validation_data=validate_gen,epochs=epochs, steps_per_epoch= steps_per_epoch_, validation_steps=validation_steps_)
 
-        current_directory = os.path.dirname(os.path.abspath(__file__))
-        print("Model saved to " + os.path.join(MODEL_SAVE_FOLDER, self.model_name + "_Part_2" + '.hdf5'))
-        if not os.path.exists(MODEL_SAVE_FOLDER):
-            os.makedirs(MODEL_SAVE_FOLDER)
-        self.model.save(os.path.join(MODEL_SAVE_FOLDER,str(self.model_name + "_Part_2" '.hdf5')))
+        #current_directory = os.path.dirname(os.path.abspath(__file__))
+        #print("Model saved to " + os.path.join(MODEL_SAVE_FOLDER, self.model_name + "_Part_2" + '.hdf5'))
+        #if not os.path.exists(MODEL_SAVE_FOLDER):
+        #    os.makedirs(MODEL_SAVE_FOLDER)
+        #self.model.save(os.path.join(MODEL_SAVE_FOLDER,str(self.model_name + "_Part_2" '.hdf5')))
 
         clean_up_logs(self.model_name + "_Part_2")
         clean_up_json_logs(self.model_name + "_Part_2")

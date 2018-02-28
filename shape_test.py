@@ -10,10 +10,13 @@ from src.NN_MODELS.common_network_operations import *
 from src.DATA_PREPARATION.data_generator import *
 from src.PREPROCESSING.rotation_zoom_flip import *
 
-direc = os.path.join('DATA','training_data')
-params = {'dir': direc,'batch_size': 16, 'shuffle': True, 'sequence_length' : 4}
+from PIL import Image
 
-validation_generator = DataGenerator(**params)
+direc = os.path.join('DATA','training_data')
+params = {'dir': direc,'batch_size': 8, 'shuffle': True, 'sequence_length' : 4}
+
+
+validation_generator = DataGenerator(**params, time_distributed=True)
 gen = validation_generator.generate()
 
 print("START")
@@ -22,10 +25,10 @@ output_new = gen.__next__()
 out = 127.5*(output_new[0] + 127.5)
 output_new = out.astype('uint8')
 
-for i in range(output_new.shape[0]):
-    for j in range(output_new.shape[1]):
-        img = Image.fromarray(output_new[i,j], 'RGB')
-        img.save("im{}T{}.png".format(i,j))
+for j in range(output_new.shape[0]):
+    img = Image.fromarray(output_new[j][0], 'RGB')
+    img.save("im{}.png".format(j))
+    img.show()
 
 
 

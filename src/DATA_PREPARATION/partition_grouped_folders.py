@@ -116,3 +116,6 @@ def sort_data_folders(source,train,test,validate):
                     if files[file_name] == groups[j]:
                         shutil.copy(os.path.join(path, file_name), video_folder)
             j+=1
+
+
+#sort_data_folders("product-image-dataset","training_data","test_data","validation_data")
