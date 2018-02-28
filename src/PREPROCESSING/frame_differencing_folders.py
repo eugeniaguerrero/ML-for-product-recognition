@@ -8,7 +8,6 @@ from skimage.util.shape import view_as_blocks
 from src.DATA_PREPARATION.folder_manipulation import *
 from src.PREPROCESSING.histogram_equalisation import *
 
-
 # def mse(imageA, imageB):
 #     # sum of the squared difference between the two images;
 #     err = np.sum((imageA.astype("float") - imageB.astype("float")) ** 2)
@@ -247,8 +246,8 @@ def main_diff(folder_set, data_path):
                 os.makedirs(diff_video_folder)
                 frame_difference_collection(video_folder, diff_video_folder, exceptions_class_folder)
                 my_count = my_count + 1
-                    # avg_time = (time.time() - start_run)/my_count
-                    # print("Avg time per set:", avg_time)
+                avg_time = (time.time() - start_run)/my_count
+                print("Avg time per set:", avg_time)
     return True
 
 if __name__ == "__main__":
@@ -262,8 +261,8 @@ if __name__ == "__main__":
     data_folder = 'DATA'
     data_path = os.path.join(Group_dir, data_folder)
 
-    #my_folders = ['test_data', 'training_data', 'validation_data']
-    my_folders = ['testing']
+    my_folders = ['test_data', 'training_data', 'validation_data']
+    # my_folders = ['sample1']
 
     main_diff(my_folders, data_path)
 
