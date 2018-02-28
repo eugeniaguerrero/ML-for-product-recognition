@@ -1,8 +1,11 @@
 #File containing the main parameters used for the neural network
 import os
 #vgg_net images MUST BE DIVISIBLE BY 4!!!
+
 IM_HEIGHT = 200
 IM_WIDTH = 200
+RAW_HEIGHT = 1024
+RAW_WIDTH = 1280
 '''
 IM_HEIGHT = 299
 IM_WIDTH = 299'''

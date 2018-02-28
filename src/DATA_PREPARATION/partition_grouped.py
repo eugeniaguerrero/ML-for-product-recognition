@@ -105,3 +105,9 @@ def sort_data(source,train,test,validate):
                 if files[file_name] == groups[j]:
                     shutil.copy(os.path.join(path, file_name), os.path.join(train_dir, subdir))
             j+=1
+
+source = "product-image-dataset"
+train = "training_data"
+validate = "validation_data"
+test = "test_data"
+sort_data(source,train,test,validate)
