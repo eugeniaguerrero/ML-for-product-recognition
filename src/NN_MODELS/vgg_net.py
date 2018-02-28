@@ -25,21 +25,24 @@ class VGG(object):
         self.model.add(Conv2D(64, (3, 3), activation='relu'))
         self.model.add(MaxPooling2D(pool_size=(2, 2)))
         self.model.add(Dropout(0.25))
-
         self.model.add(Flatten())
         self.model.add(Dense(256, activation='relu'))
         self.model.add(Dropout(0.5))
         self.model.add(Dense(NUMBER_CLASSES, activation='softmax'))
-
-        if cached_model is not None:
-            self.model = load_model(cached_model)
+        print(ImageDataGenerator().flow_from_directory('DATA/product-image-dataset', class_mode="categorical").class_indices)
 
         sgd = SGD(lr, decay=1e-6, momentum=0.9, nesterov=True)
         self.model.compile(loss='categorical_crossentropy', optimizer=sgd,metrics = ['accuracy'])
+        if cached_model is not None:
+            print(self.return_weights(1))
+            self.model = load_model(cached_model)
+            print(self.return_weights(1))
+
 
 
     def train(self,train_directory_, validation_directory_,model_description,epochs):
         self.model_name += model_description
+        print(self.return_weights(1))
         datagen = ImageDataGenerator(
             rescale=1. / 255,
             shear_range=0.2,
@@ -70,7 +73,9 @@ class VGG(object):
             print("Model saved to " + os.path.join(current_directory, os.path.pardir, MODEL_SAVE_FOLDER,self.model_name) + '.hdf5')
             if not os.path.exists(MODEL_SAVE_FOLDER):
                 os.makedirs(MODEL_SAVE_FOLDER)
+            print(self.return_weights(1))
             self.model.save(os.path.join(MODEL_SAVE_FOLDER,str(self.model_name + '.hdf5')))
+            print(self.return_weights(1))
             clean_up(self.model_name)
         else:
             self.model.fit_generator(train_generator, validation_data=validate_generator, epochs=epochs)
@@ -88,6 +93,7 @@ class VGG(object):
         # CHANGED THIS!!!!
         input_data = input_data / 255
         predictions = self.model.predict(input_data, verbose=False)
+        #print(predictions)
         return np.array(predictions[0])
 
     def return_weights(self,layer):

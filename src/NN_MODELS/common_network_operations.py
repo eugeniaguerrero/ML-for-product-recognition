@@ -1,6 +1,7 @@
 from src.common import *
 import keras
 from src.DATA_PREPARATION.folder_manipulation import *
+from scipy import stats
 
 #COMBINE ALL 3 into one??
 
@@ -35,6 +36,9 @@ def find_incorrect_classifications(directory_, NN): # pragma: no cover
     # Test 1 check if untrained model returns uniform predictions
     folders = get_folders(directory_)
     category = 0
+    count = 0
+    incorrect = 0
+    preds = []
     import shutil
     for folder in folders:
 
@@ -44,13 +48,36 @@ def find_incorrect_classifications(directory_, NN): # pragma: no cover
         image_list = get_image_names(os.path.join(directory_, folder))
         for image in image_list:
             filepath = os.path.join(directory_, folder, image)
-            resized_image = get_image(filepath)
-            predictions = NN.predict(resized_image)
+            resized_image = get_image(filepath)#np.squeeze(get_image(filepath),axis=0)
 
+            predictions = NN.predict(resized_image)
+            #print(predictions)
+            #print(np.argmax(predictions))
+            #print(category)
+            #print("***********")
+            if not os.path.exists(os.path.join(incpred, str(np.argmax(predictions)))):
+                os.makedirs(os.path.join(incpred, str(np.argmax(predictions))))
+            fileto2 = os.path.join(incpred, str(np.argmax(predictions)), str(count) + image)
+            shutil.copyfile(filepath, fileto2)
+            preds.append(np.argmax(predictions))
             if np.argmax(predictions) != category:
                 fileto = os.path.join(incpred, folder, image)
+                #print("Saving file to : " + fileto)
                 shutil.copyfile(filepath, fileto)
+                incorrect += 1
+            count += 1
+
         category = category + 1
+        print("***********************************************")
+        saved = stats.mode(np.array(preds)).mode[0]
+        preds = np.array(preds)
+        print(saved)
+        print(preds)
+        print("Accuracy is : " + str(preds[preds==saved].shape[0]/preds.shape[0]) + " on class " + str(category))
+        incorrect = 0
+        count = 0
+        preds = []
+
 
 def get_Tensorboard(): # pragma: no cover
     tensor_log = keras.callbacks.TensorBoard(log_dir=TENSORBOARD_LOGS_FOLDER,

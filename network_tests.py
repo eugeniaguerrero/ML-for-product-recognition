@@ -9,7 +9,6 @@ class TestNetwork(unittest.TestCase):
         Networks = [VGG(output = True),INCEPTION_V3(output = True)]
 
         for NN in Networks:
-
             # store weights before
             before_softmax = NN.return_weights(-1)
 
