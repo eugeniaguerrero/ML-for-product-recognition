@@ -28,9 +28,7 @@ class Preprocessing:
         #resize from 5d to 4d
         preprocessed_images = picture_batch
         if self.histogram_equalisation_:
-
             preprocessed_images = CLAHE_equalisation(preprocessed_images)
-            print("Normalising")
 
         if self.rotation_ == True:
              preprocessed_images = random_rotation(preprocessed_images, self.rotation_degrees_, 0, 1, 2)
