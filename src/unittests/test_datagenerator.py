@@ -4,7 +4,6 @@ parentdir = os.path.dirname(currentdir)
 parentdir = os.path.dirname(parentdir)
 sys.path.insert(0,parentdir)
 import src.DATA_PREPARATION.data_generator as test
-import numpy as np
 from src.common import *
 
 import unittest
@@ -31,14 +30,14 @@ class ComponentTestCase(unittest.TestCase):
 
     #Sequence_length = 1: Testing whether test_generator crops the right amount of pictures
     def test_generate_sqnc_1(self):
-        #Expected shape x: (8,100,100,3) due to batch_size = 2, sequence_length = 1 and 4 pictures in one folder
+        #Expected shape x: (8,IM_WIDTH, IM_HEIGHT,3) due to batch_size = 2, sequence_length = 1 and 4 pictures in one folder
         #Expected shape y: (8,10) due to 8 pictures and sequence_length = 1
         datagen = test.DataGenerator(dir=dat,
                                      batch_size=2,
                                      shuffle=True,
                                      time_distributed=False,
-                                     sequence_length=FILES_IN_FOLDER)
-        exp_dims_picture = (2,100,100,3)
+                                     sequence_length=IMAGES_PER_FOLDER)
+        exp_dims_picture = (2,IM_WIDTH, IM_HEIGHT,3)
         exp_dims_labels = (2,10)
         gen = datagen.generate()
         test_in = gen.__next__()
@@ -46,22 +45,22 @@ class ComponentTestCase(unittest.TestCase):
         self.assertEqual(exp_dims_labels, test_in[1].shape)
 
     def test_generate_sqnc_4(self):
-        #Expected shape x: (8,100,100,3) due to batch_size = 2, sequence_length = 1 and 4 pictures in one folder
+        #Expected shape x: (8,IM_WIDTH, IM_HEIGHT,3) due to batch_size = 2, sequence_length = 1 and 4 pictures in one folder
         #Expected shape y: (8,10) due to 8 pictures and sequence_length = 1
         datagen = test.DataGenerator(dir=dat,
                                      batch_size=2,
                                      shuffle=True,
                                      time_distributed=True,
-                                     sequence_length=FILES_IN_FOLDER)
+                                     sequence_length=IMAGES_PER_FOLDER)
 
-        exp_dims_picture = (2,4,100,100,3)
+        exp_dims_picture = (2,4,IM_WIDTH, IM_HEIGHT,3)
         exp_dims_labels = (2,10)
         gen = datagen.generate()
         test_in = gen.__next__()
         self.assertEqual(exp_dims_picture, test_in[0].shape)
         self.assertEqual(exp_dims_labels, test_in[1].shape)
 
-    def test_generate_sqnc_4(self):
+    def test_generate_sqnc_4_bpe(self):
         #10 classes * 2 folders * 4 pictures = 80 pictures
         #Getting 4 pictures per batch with 2 batches = 8 pictures per step
         #80 pictures / 8 pictures = 10 steps
@@ -69,13 +68,13 @@ class ComponentTestCase(unittest.TestCase):
                                      batch_size=2,
                                      shuffle=True,
                                      time_distributed=True,
-                                     sequence_length=FILES_IN_FOLDER)
+                                     sequence_length=IMAGES_PER_FOLDER)
 
         self.assertEqual(10, datagen.batches_per_epoch)
 
 
     #Testing whether datagenerator identifies correct number of steps per epoch
-    def test_generate_sqnc_1(self):
+    def test_generate_sqnc_1_bpe(self):
         #10 classes * 2 folders * 4 pictures = 80 pictures
         #Getting 1 pictures per batch with 2 batches = 2 pictures per step
         #80 pictures / 2 pictures = 40 steps
@@ -83,21 +82,21 @@ class ComponentTestCase(unittest.TestCase):
                                      batch_size=2,
                                      shuffle=True,
                                      time_distributed=False,
-                                     sequence_length=FILES_IN_FOLDER)
+                                     sequence_length=IMAGES_PER_FOLDER)
 
         self.assertEqual(40, datagen.batches_per_epoch)
 
     def test_generate_sqnc_4_loop(self):
-        #Expected shape x: (8,100,100,3) due to batch_size = 2, sequence_length = 1 and 4 pictures in one folder
+        #Expected shape x: (8,IM_WIDTH, IM_HEIGHT,3) due to batch_size = 2, sequence_length = 1 and 4 pictures in one folder
         #Expected shape y: (8,10) due to 8 pictures and sequence_length = 1
         datagen = test.DataGenerator(dir=dat,
                                      batch_size=2,
                                      shuffle=True,
                                      time_distributed=True,
-                                     sequence_length=FILES_IN_FOLDER)
+                                     sequence_length=IMAGES_PER_FOLDER)
 
 
-        exp_dims_picture = (2,4,100,100,3)
+        exp_dims_picture = (2,4,IM_WIDTH, IM_HEIGHT,3)
         exp_dims_labels = (2,10)
 
         gen = datagen.generate()
@@ -120,15 +119,15 @@ class ComponentTestCase(unittest.TestCase):
 
 
     def test_generate_sqnc_1_loop(self):
-        #Expected shape x: (8,100,100,3) due to batch_size = 2, sequence_length = 1 and 4 pictures in one folder
+        #Expected shape x: (8,IM_WIDTH, IM_HEIGHT,3) due to batch_size = 2, sequence_length = 1 and 4 pictures in one folder
         #Expected shape y: (8,10) due to 8 pictures and sequence_length = 1
         datagen = test.DataGenerator(dir=dat,
                                      batch_size=2,
                                      shuffle=True,
                                      time_distributed=False,
-                                     sequence_length=FILES_IN_FOLDER)
+                                     sequence_length=IMAGES_PER_FOLDER)
 
-        exp_dims_picture = (2,100,100,3)
+        exp_dims_picture = (2,IM_WIDTH, IM_HEIGHT,3)
         exp_dims_labels = (2,10)
 
 

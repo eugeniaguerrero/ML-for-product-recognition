@@ -21,7 +21,7 @@ def CLAHE_equalisation(img):
 
         img[i] = final
 
-        return final
+    return img
 
 
 # photo_name = './orange2.jpg'
