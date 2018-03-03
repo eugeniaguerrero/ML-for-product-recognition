@@ -15,7 +15,7 @@ import keras
 '''
 #CHANGED FOR TESTING FOLDERS ETC
 cnn_lstm_ = CNN_LSTM()
-cnn_lstm_.train(train_directory_='DATA/training_data_grouped', validation_directory_='DATA/training_data_grouped',model_description= '', epochs=NUMBER_EPOCHS)
+cnn_lstm_.train(train_directory_='DATA/training_data', validation_directory_='DATA/training_data_grouped',model_description= '', epochs=NUMBER_EPOCHS)
 '''
 
 #datagen = keras.preprocessing.image.ImageDataGenerator(rescale=1./255,rotation_range=20)

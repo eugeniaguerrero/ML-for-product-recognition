@@ -1,0 +1,19 @@
+language: python
+python:
+  - 3.6
+
+# install dependencies
+install:
+#  - npm install
+#  - npm install --save-dev start-server-and-test
+#  - pip install -r requirements/dev.txt
+
+# this needs to be running before the tests are run
+pre_script:
+
+
+script:
+
+
+deploy:
+  skip_cleanup: true
