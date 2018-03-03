@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-
+import os
 def CLAHE_equalisation(img):
     img = np.array(img)
     if img.ndim == 3:
@@ -21,7 +21,7 @@ def CLAHE_equalisation(img):
 
         img[i] = final
 
-    return img
+        return final
 
 
 # photo_name = './orange2.jpg'

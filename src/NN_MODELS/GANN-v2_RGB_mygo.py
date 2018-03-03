@@ -14,19 +14,19 @@ FOLDER_NUMBER = 0
 ITERATION = 0
 
 class WGANN(object):
-    def __init__(self):
+    def __init__(self, output = True):
         RND = 777
         RUN = 'F'
+        self.output = output
         self.OUT_DIR = 'out/' + RUN
         self.TENSORBOARD_DIR = '/tensorboard/wgans/' + RUN
         self.model_name = "WGANN"
-        # GPU #
-        self.GPU = "1"
+        self.model_input = (1, IM_HEIGHT, IM_WIDTH, NUMBER_CHANNELS)
         # latent vector size
         self.Z_SIZE = IM_WIDTH
         # number of iterations D is trained for per each G iteration
         self.D_ITERS = 5
-        self.BATCH_SIZE = 50
+        self.BATCH_SIZE = BATCH_SIZE
         self.ITERATIONS = 25000
         self.NO_CHANNELS = 3
         self.DG_losses = []
@@ -48,15 +48,9 @@ class WGANN(object):
         self.DG.get_layer('D').trainable = False  # freeze D in generator training faze
         self.DG.compile(optimizer=RMSprop(lr=0.00005),loss=[self.wasserstein, 'sparse_categorical_crossentropy'])
 
-
-
         if not os.path.isdir(self.OUT_DIR): os.makedirs(self.OUT_DIR)
         ##MAYBE DELETE THIS!!
         K.set_image_dim_ordering('tf')
-
-
-
-
 
     # basically return mean(y_pred),
     # but with ability to inverse it for minimization (when y_true == -1)
@@ -371,7 +365,6 @@ class WGANN(object):
         if not os.path.exists(MODEL_SAVE_FOLDER):
             os.makedirs(MODEL_SAVE_FOLDER)
         self.model.save(os.path.join(MODEL_SAVE_FOLDER, str(self.model_name + '.hdf5')))
-
 
 
 wg = WGANN()

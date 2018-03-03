@@ -9,10 +9,12 @@ from src.DATA_PREPARATION.folder_manipulation import *
 from src.NN_MODELS.common_network_operations import *
 
 class INCEPTION_V3(object):
-    def __init__(self,lr=0.0001,cached_model= None):
+    def __init__(self,output = True,lr=0.0001,cached_model= None):
         self.model_name = "inception_v3"
+        self.model_input = (1, IM_HEIGHT, IM_WIDTH, NUMBER_CHANNELS)
         # create the base pre-trained model
         self.base_model = InceptionV3(weights='imagenet', include_top=False)
+        self.output = output
         # add a global spatial average pooling layer
         x = self.base_model.output
         x = GlobalAveragePooling2D()(x)
@@ -40,13 +42,13 @@ class INCEPTION_V3(object):
         train_generator = datagen.flow_from_directory(
             train_directory_,
             target_size=(IM_HEIGHT, IM_WIDTH),
-            batch_size=32,
+            batch_size=BATCH_SIZE,
             class_mode="categorical")
 
         validate_generator = datagen.flow_from_directory(
             validation_directory_,
             target_size=(IM_HEIGHT, IM_WIDTH),
-            batch_size=32,
+            batch_size=BATCH_SIZE,
             class_mode="categorical")  # CHANGE THIS!!!
 
         # first: train only the top layers (which were randomly initialized)
@@ -58,33 +60,23 @@ class INCEPTION_V3(object):
         self.model.compile(optimizer='rmsprop', loss='categorical_crossentropy',metrics = ['accuracy'])
 
         # train the model on the new data for a few epochs
-        self.model.fit_generator(train_generator, validation_data=validate_generator,callbacks=[calls_.json_logging_callback,
+
+        if self.output:
+            self.model.fit_generator(train_generator, validation_data=validate_generator,callbacks=[calls_.json_logging_callback,
                                                              calls_.slack_callback,keras.callbacks.TerminateOnNaN(),
-                                                             keras.callbacks.ModelCheckpoint(filepath=INTERMEDIATE_FILE,
-                                                                                             monitor='val_loss',
-                                                                                             verbose=0,
-                                                                                             save_best_only=False,
-                                                                                             save_weights_only=False,
-                                                                                             mode='auto', period=1),
-                                                             keras.callbacks.TensorBoard(log_dir=TENSORBOARD_LOGS_FOLDER,
-                                                                                         histogram_freq=0,
-                                                                                         batch_size=64,
-                                                                                         write_graph=True,
-                                                                                         write_grads=False,
-                                                                                         write_images=True,
-                                                                                         embeddings_freq=0,
-                                                                                         embeddings_layer_names=None,
-                                                                                         embeddings_metadata=None)],epochs=epochs)
+                                                                get_model_checkpoint(),get_Tensorboard()],epochs=epochs)
+            print("Model saved to " + os.path.join(MODEL_SAVE_FOLDER, self.model_name + "_Part_1" + '.hdf5'))
+            if not os.path.exists(MODEL_SAVE_FOLDER):
+                os.makedirs(MODEL_SAVE_FOLDER)
+            self.model.save(os.path.join(MODEL_SAVE_FOLDER, str(self.model_name + "_Part_1" '.hdf5')))
+            clean_up(self.model_name + "_Part_1")
+
+        else:
+            self.model.fit_generator(train_generator, validation_data=validate_generator,epochs=epochs)
         # at this point, the top layers are well trained and we can start fine-tuning
         # convolutional layers from inception V3. We will freeze the bottom N layers
         # and train the remaining top layers.
-        print("Model saved to " + os.path.join(MODEL_SAVE_FOLDER, self.model_name + "_Part_1" + '.hdf5'))
-        if not os.path.exists(MODEL_SAVE_FOLDER):
-            os.makedirs(MODEL_SAVE_FOLDER)
-        self.model.save(os.path.join(MODEL_SAVE_FOLDER, str(self.model_name + "_Part_1" '.hdf5')))
-        clean_up_logs(self.model_name + "_Part_1")
-        clean_up_json_logs(self.model_name + "_Part_1")
-        clean_up_models(self.model_name + "_Part_1")
+
         # let's visualize layer names and layer indices to see how many layers
         # we should freeze:
         for i, layer in enumerate(self.base_model.layers):
@@ -104,34 +96,20 @@ class INCEPTION_V3(object):
 
         # we train our model again (this time fine-tuning the top 2 inception blocks
         # alongside the top Dense layers
-        self.model.fit_generator(train_generator, validation_data=validate_generator,callbacks=[calls_.json_logging_callback,
-                                                             calls_.slack_callback,
-                                                             keras.callbacks.TerminateOnNaN(),
-                                                             keras.callbacks.ModelCheckpoint(filepath=INTERMEDIATE_FILE,
-                                                                                             monitor='val_loss',
-                                                                                             verbose=0,
-                                                                                             save_best_only=False,
-                                                                                             save_weights_only=False,
-                                                                                             mode='auto', period=1),
-                                                             keras.callbacks.TensorBoard(log_dir=TENSORBOARD_LOGS_FOLDER,
-                                                                                         histogram_freq=0,
-                                                                                         batch_size=64,
-                                                                                         write_graph=True,
-                                                                                         write_grads=False,
-                                                                                         write_images=True,
-                                                                                         embeddings_freq=0,
-                                                                                         embeddings_layer_names=None,
-                                                                                         embeddings_metadata=None)],epochs=epochs)
+        if self.output:
+            self.model.fit_generator(train_generator, validation_data=validate_generator,callbacks=[calls_.json_logging_callback,
+                                                                            calls_.slack_callback,keras.callbacks.TerminateOnNaN(),
+                                                                                get_model_checkpoint(),get_Tensorboard()],epochs=epochs)
+            current_directory = os.path.dirname(os.path.abspath(__file__))
+            print("Model saved to " + os.path.join(MODEL_SAVE_FOLDER, self.model_name + "_Part_2" + '.hdf5'))
+            if not os.path.exists(MODEL_SAVE_FOLDER):
+                os.makedirs(MODEL_SAVE_FOLDER)
+            self.model.save(os.path.join(MODEL_SAVE_FOLDER,str(self.model_name + "_Part_2" '.hdf5')))
 
-        current_directory = os.path.dirname(os.path.abspath(__file__))
-        print("Model saved to " + os.path.join(MODEL_SAVE_FOLDER, self.model_name + "_Part_2" + '.hdf5'))
-        if not os.path.exists(MODEL_SAVE_FOLDER):
-            os.makedirs(MODEL_SAVE_FOLDER)
-        self.model.save(os.path.join(MODEL_SAVE_FOLDER,str(self.model_name + "_Part_2" '.hdf5')))
+            clean_up(self.model_name + "_Part_2")
+        else:
+            self.model.fit_generator(train_generator, validation_data=validate_generator, epochs=epochs)
 
-        clean_up_logs(self.model_name + "_Part_2")
-        clean_up_json_logs(self.model_name + "_Part_2")
-        clean_up_models(self.model_name + "_Part_2")
 
     def predict(self,input_data):
         """
@@ -146,46 +124,5 @@ class INCEPTION_V3(object):
         predictions = self.model.predict(input_data, verbose=False)
         return np.array(predictions[0])
 
-
-    def debug(self,directory_):
-
-        #Test 1 check if untrained model returns uniform predictions
-        folders = get_folders(directory_)
-        image_list = get_image_names(os.path.join(directory_, folders[0]))
-        filepath = os.path.join(directory_,folders[0],image_list[0])
-        resized_image = get_image(filepath)
-        predictions = self.predict(resized_image)
-
-        if np.max(predictions) - np.min(predictions) > 0.1:
-            print("Starting with a pre-trained model")
-        else:
-            print("Starting without a pre-trained model")
-        print("Initial predictions are:")
-        print(predictions)
-        #Test 2 see if accuracy goes very quickly to 1 on 1 image
-        self.train(train_directory_ = directory_,validation_directory_ =directory_,model_name='debugging_model',epochs=10)
-
-    def find_incorrect_classifications(self,directory_):
-        incpred = "incorrect_predictions"
-        if not os.path.exists(incpred):
-            os.makedirs(incpred)
-
-        # Test 1 check if untrained model returns uniform predictions
-        folders = get_folders(directory_)
-        category = 0
-        import shutil
-        for folder in folders:
-
-            if not os.path.exists(os.path.join(incpred,folder)):
-                os.makedirs(os.path.join(incpred,folder))
-
-            image_list = get_image_names(os.path.join(directory_, folder))
-            for image in image_list:
-                filepath = os.path.join(directory_,folder,image)
-                resized_image = get_image(filepath)
-                predictions = self.predict(resized_image)
-                if np.argmax(predictions) != category:
-                    fileto = os.path.join(incpred,folder,image)
-                    shutil.copyfile(filepath,fileto)
-
-            category = category+1
+    def return_weights(self,layer):
+        return self.model.layers[layer].get_weights()
