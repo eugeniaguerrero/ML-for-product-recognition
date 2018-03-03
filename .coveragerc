@@ -1,0 +1,11 @@
+[run]
+branch = False
+omit =
+     Master.py
+     Master_Debugging_FD.py
+     extract_to_parent.py
+     shape_test.py
+     src/PREPROCESSING/__init__.py
+     src/PREPROCESSING/preprocessing_old.py
+     src/__init__.py, src/unittests/*
+[report]
