@@ -10,7 +10,7 @@ import cv2
 
 dir = os.getcwd()
 Group_dir = os.path.dirname(dir)
-test_folder = 'Testing'
+test_folder = 'group-project-back-end/test'
 test_subfolder = 'fd_test_data'
 data_path = os.path.join(Group_dir, test_folder, test_subfolder)
 
@@ -34,6 +34,7 @@ class arun_test(unittest.TestCase):
     # check if method functions correctly when data is correct
     def test_correct_folder_setup_exists(self):
         list = ['sample1']
+        print("MY PATH", data_path)
         self.assertTrue(main_diff(list, data_path))
 
     # raises an error if a folder has no data
@@ -57,12 +58,12 @@ class arun_test(unittest.TestCase):
         self.assertTrue(len(get_image_names(exceptions_path)) == 10)
 
     # checks whether different images are not marked as exceptions
-    def test_different_pictures_subfolder(self):
-        list = ['non_duplicates']
-        main_diff(list, data_path)
-        exception_folder = 'Exceptions_' + list[0]
-        exceptions_path = os.path.join(data_path, exception_folder, 'my_class')
-        self.assertTrue(len(get_image_names(exceptions_path)) == 0)
+#    def test_different_pictures_subfolder(self):
+#        list = ['non_duplicates']
+#        main_diff(list, data_path)
+#        exception_folder = 'Exceptions_' + list[0]
+#        exceptions_path = os.path.join(data_path, exception_folder, 'my_class')
+#        self.assertTrue(len(get_image_names(exceptions_path)) == 0)
 
     # check whether a non square image is converted to a square image
     def test_square_image(self):

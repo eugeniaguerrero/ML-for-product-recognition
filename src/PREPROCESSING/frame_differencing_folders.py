@@ -246,28 +246,28 @@ def main_diff(folder_set, data_path):
                 os.makedirs(diff_video_folder)
                 frame_difference_collection(video_folder, diff_video_folder, exceptions_class_folder)
                 my_count = my_count + 1
-                avg_time = (time.time() - start_run)/my_count
-                print("Avg time per set:", avg_time)
+                #avg_time = (time.time() - start_run)/my_count
+                #print("Avg time per set:", avg_time)
     return True
 
-if __name__ == "__main__":
-    start_run = time.time()
-    print("Start Run")
-    # The directory where the augmented images are going to be saved
-
-    dir = os.getcwd()
-    src_dir = os.path.dirname(dir)
-    Group_dir = os.path.dirname(src_dir)
-    data_folder = 'DATA'
-    data_path = os.path.join(Group_dir, data_folder)
-
-    my_folders = ['test_data', 'training_data', 'validation_data']
-    # my_folders = ['sample1']
-
-    main_diff(my_folders, data_path)
-
-    end_run = time.time()
-    print("Total Run Time (mins): ", (end_run - start_run)/60)
+#if __name__ == "__main__":
+#    start_run = time.time()
+#    print("Start Run")
+#    # The directory where the augmented images are going to be saved
+#
+#    dir = os.getcwd()
+#    src_dir = os.path.dirname(dir)
+#    Group_dir = os.path.dirname(src_dir)
+#    data_folder = 'DATA'
+#    data_path = os.path.join(Group_dir, data_folder)
+3
+#    my_folders = ['test_data', 'training_data', 'validation_data']
+#    # my_folders = ['sample1']
+#
+#    main_diff(my_folders, data_path)
+#
+#    end_run = time.time()
+#    print("Total Run Time (mins): ", (end_run - start_run)/60)
 
 
 

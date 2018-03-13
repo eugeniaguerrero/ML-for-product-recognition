@@ -34,8 +34,22 @@ def get_image(filepath):
     resized_image = np.expand_dims(cv2.resize(img, (IM_HEIGHT, IM_WIDTH)), axis=0)
     return resized_image
 
-def dstack_folder(directory_):
+# def dstack_folder(directory_):
+#     image_list = get_image_names(directory_)
+#     images = get_image(os.path.join(directory_, image_list[0]))
+#     if len(image_list) > 1:
+#         for image in image_list[1:]:
+#             new_image = get_image(os.path.join(directory_, image))
+#             images = np.concatenate([new_image,images],axis = 0)
+#     return images
+
+
+def dstack_folder_sequence(directory_, sequence_length):
     image_list = get_image_names(directory_)
+    if sequence_length != 1 and len(image_list) != sequence_length:
+        print("Incompatible sequence {}".format(directory_))
+        return
+
     images = get_image(os.path.join(directory_, image_list[0]))
     if len(image_list) > 1:
         for image in image_list[1:]:
