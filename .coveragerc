@@ -8,4 +8,6 @@ omit =
      src/PREPROCESSING/__init__.py
      src/PREPROCESSING/preprocessing_old.py
      src/__init__.py, src/unittests/*
+     test_network.py
+     test/*
 [report]
