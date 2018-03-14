@@ -7,30 +7,11 @@ from src.common import *
 #from src.DATA_PREPARATION.partition_grouped import *
 #from src.DATA_PREPARATION.partition_grouped_folders import *
 import keras
+from bayes_opt import BayesianOptimization
 import time
 
-#TEST DATA GROUPED
-#sort_data(SOURCE,TRAIN_DATA,TEST_DATA,VALIDATE_DATA)
-#sort_data_folders(SOURCE,TRAIN_DATA_GROUPED,TEST_DATA_GROUPED,VALIDATE_DATA_GROUPED)
-
-'''
-#CHANGED FOR TESTING FOLDERS ETC
-cnn_lstm_ = CNN_LSTM()
-cnn_lstm_.train(train_directory_='DATA/training_data', validation_directory_='DATA/training_data_grouped',model_description= '', epochs=NUMBER_EPOCHS)
-'''
-
-#datagen = keras.preprocessing.image.ImageDataGenerator(rescale=1./255,rotation_range=20)
-
-'''rotation_range=360,
-    horizontal_flip=True,
-    vertical_flip=True,'''
-
-'''
-width_shift_range=0.1,
-height_shift_range=0.1,
-channel_shift_range=0.2,
-shear_range=0.35,
-zoom_range = [0.7, 1.3])'''
+lr=2
+decay = 6
 
 datagen = ImageDataGenerator(
     rotation_range=10,
@@ -45,24 +26,93 @@ datagen = ImageDataGenerator(
 datagenval = ImageDataGenerator(
     rescale=1. / 255)
 
+##############################################################################
+################# TEST IMAGE SIZE ###########################################
+############################################################################
+
 file = open('MODEL_OUTPUTS/image_sizetime.txt',mode='w')
 file.write("Image_Size,Start,End,Difference\n")
 
-#,80,100,150,200,250,300,350,400,500
 for image_size in [50,80,100,150,200,250,300,400,500]:
     start = time.time()
-    IM_HEIGHT = image_size
-    IM_WIDTH = image_size
-    vgg_ = VGG(False)
-    vgg_.train(train_directory_=TRAIN_DATA, validation_directory_=VALIDATE_DATA, model_description= "image_test_size" + str(image_size), epochs=NUMBER_EPOCHS,datagen=datagen,datagenval=datagenval)
+    vgg_ = VGG(False,IM_HEIGHT=image_size,IM_WIDTH=image_size)
+    vgg_.train(train_directory_=TRAIN_DATA, validation_directory_=VALIDATE_DATA, model_description= "image_test_size" + str(image_size),
+               epochs=NUMBER_EPOCHS,datagen=datagen,datagenval=datagenval)
     end = time.time()
     diff = end-start
     file.write(str(image_size) + ',' + str(start) + ',' + str(end) + ',' + str(diff) + '\n')
 
 file.close()
 
-'''
-inception_v3_ = INCEPTION_V3()
-inception_v3_.train(train_directory_='DATA/training_data', validation_directory_='DATA/training_data', model_description= '', epochs=NUMBER_EPOCHS)
-'''
 
+##############################################################################
+################# OPTIMISE NETWORK ###########################################
+############################################################################
+
+#IM_HEIGHT = 150
+#IM_WIDTH = 150
+
+def get_vals(conv1_size = 5,conv2_size = 6,dense_size = 8,moment = 0.9):
+    global lr
+    global decay
+    print("Dense Size is " + str(dense_size))
+    vals = "LR-" + str(lr) + "_C1-" + str(conv1_size) + "_C2-" + str(conv2_size) + "_DS-" + str(dense_size)
+    vals +=  "_D-" + str(decay) + "_M-" + str(moment)
+    print(vals)
+    vgg_ = VGG(output=False,lr=lr,conv1_size=conv1_size,conv2_size=conv2_size,dense_size=dense_size,decay=decay,moment=moment)
+    vgg_.train(train_directory_=TRAIN_DATA, validation_directory_=VALIDATE_DATA,
+               model_description="image_test_size" + str(vals), epochs=NUMBER_EPOCHS, datagen=datagen,
+               datagenval=datagenval)
+    validate_generator = datagenval.flow_from_directory(
+        VALIDATE_DATA,
+        target_size=(IM_HEIGHT, IM_WIDTH),
+        batch_size=BATCH_SIZE,
+        class_mode="categorical")
+    print(vgg_.model.metrics_names)
+    data = vgg_.model.evaluate_generator(validate_generator)
+    print(data)
+    return data[1]
+
+
+#RETURNS A GRID BETWEEN TWO VALUES
+def return_grid(value,dist):
+    grid = np.arange(value[0],value[1]+dist/10,dist/10,dtype=np.float64)
+    return grid
+
+def minimise_lr_and_lr_decay():
+    global kwargs
+    global lr
+    global decay
+    global NUMBER_EPOCHS
+
+    #NUMBER_EPOCHS = 30
+    max_lr = None
+    max_lr_dec = None
+    max_val = None
+    dist = -2.1 + 4
+    grid = return_grid([-6,-1.5], dist)
+    for lr_ in grid:
+        dist2 = 1 - 0.7
+        grid2 = return_grid([0.7, 1], dist2)
+        for lr_decay in grid2:
+            values = []
+            max_item = None
+            max_val = 0
+            decay = lr_decay
+            lr = lr_
+            values.append(get_vals())
+            if values[-1]>max_val:
+                max_val = values[-1]
+                max_lr = lr_
+                max_lr_dec = lr_decay
+    print ("Maximum Val was : " + str(max_val) + " Lr " + str(max_lr) + " lr_dec " + str(max_lr_dec))
+    NUMBER_EPOCHS = 70
+
+
+minimise_lr_and_lr_decay()
+
+bo = BayesianOptimization(lambda conv1_size,conv2_size,dense_size,moment: get_vals(conv1_size,conv2_size,dense_size,moment),
+                          {"conv1_size":(3,8),"conv2_size":(3,8),"dense_size":(6,11),"moment":(0.5,1.0)})
+
+bo.explore({"conv1_size":(3,8),"conv2_size":(3,8),"dense_size":(6,11),"moment":(0.5,1.0)})
+bo.maximize(init_points=2, n_iter=500, kappa=10,acq="ucb") #, acq="ucb"

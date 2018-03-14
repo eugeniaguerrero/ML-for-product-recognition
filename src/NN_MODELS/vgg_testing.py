@@ -10,31 +10,41 @@ from src.DATA_PREPARATION.folder_manipulation import *
 from src.NN_MODELS.common_network_operations import *
 
 class VGG(object):
-    def __init__(self,output = True,lr=0.01,cached_model= None):
+    def __init__(self,output = True,lr=2,conv1_size = 5,conv2_size = 6,dense_size = 8,decay = 6,moment = 0.9,cached_model= None,IM_HEIGHT=100,IM_WIDTH=100):
         self.model_name = "vgg_net"
         self.output = output
         self.model_input = (1, IM_HEIGHT, IM_WIDTH, NUMBER_CHANNELS)
+        self.im_height = IM_HEIGHT
+        self.im_width = IM_WIDTH
         self.model = Sequential()
+        #SORT OUT THE DIMENSIONS
+        conv1_size = int(2**conv1_size)
+        conv2_size = int(2 ** conv2_size)
+        dense_size = int(2** dense_size)
+
+        decay = 10 **(-decay)
+        lr = 10**(-lr)
+
         # input: 100x100 images with 3 channels -> (100, 100, 3) tensors.
         # this applies 32 convolution filters of size 3x3 each.
-        self.model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(IM_HEIGHT,IM_WIDTH,3)))
-        self.model.add(Conv2D(32, (3, 3), activation='relu'))
+        self.model.add(Conv2D(conv1_size, (3, 3), activation='relu', input_shape=(IM_HEIGHT,IM_WIDTH,3)))
+        self.model.add(Conv2D(conv1_size, (3, 3), activation='relu'))
         self.model.add(MaxPooling2D(pool_size=(2, 2)))
         self.model.add(Dropout(0.25))
-        self.model.add(Conv2D(64, (3, 3), activation='relu'))
-        self.model.add(Conv2D(64, (3, 3), activation='relu'))
+        self.model.add(Conv2D(conv2_size, (3, 3), activation='relu'))
+        self.model.add(Conv2D(conv2_size, (3, 3), activation='relu'))
         self.model.add(MaxPooling2D(pool_size=(2, 2)))
         self.model.add(Dropout(0.25))
 
         self.model.add(Flatten())
-        self.model.add(Dense(256, activation='relu'))
+        self.model.add(Dense(dense_size, activation='relu'))
         self.model.add(Dropout(0.5))
         self.model.add(Dense(NUMBER_CLASSES, activation='softmax'))
 
         if cached_model is not None:
             self.model = load_model(cached_model)
 
-        sgd = SGD(lr, decay=1e-6, momentum=0.9, nesterov=True)
+        sgd = SGD(lr, decay=decay, momentum=moment, nesterov=True)
         self.model.compile(loss='categorical_crossentropy', optimizer=sgd,metrics = ['accuracy'])
 
     def train(self,train_directory_, validation_directory_,model_description,epochs,datagen,datagenval):
@@ -43,15 +53,17 @@ class VGG(object):
         test_datagen = ImageDataGenerator(rescale=1. / 255)
         calls_ = logs()
 
+        print("Image dimensions are : " + str(self.im_height))
+
         train_generator = datagen.flow_from_directory(
             train_directory_,
-            target_size=(IM_HEIGHT, IM_WIDTH),
+            target_size=(self.im_height, self.im_width),
             batch_size=BATCH_SIZE,
             class_mode="categorical")
 
         validate_generator = datagenval.flow_from_directory(
             validation_directory_,
-            target_size=(IM_HEIGHT, IM_WIDTH),
+            target_size=(self.im_height, self.im_width),
             batch_size=BATCH_SIZE,
             class_mode="categorical")  # CHANGE THIS!!!
 
