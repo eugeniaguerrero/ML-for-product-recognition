@@ -24,7 +24,7 @@ class VGG(object):
 
         decay = 10 **(-decay)
         lr = 10**(-lr)
-
+        print(lr)
         # input: 100x100 images with 3 channels -> (100, 100, 3) tensors.
         # this applies 32 convolution filters of size 3x3 each.
         self.model.add(Conv2D(conv1_size, (3, 3), activation='relu', input_shape=(IM_HEIGHT,IM_WIDTH,3)))

@@ -12,9 +12,12 @@ import time
 
 lr=2
 decay = 6
+#########################################
+######### FAILED #######################
 
+
+'''
 datagen = ImageDataGenerator(
-    rotation_range=10,
     horizontal_flip=True,
     vertical_flip=True,
     width_shift_range=0.1,
@@ -22,9 +25,21 @@ datagen = ImageDataGenerator(
     channel_shift_range=0.1,
     shear_range=0.1,
     rescale=1. / 255)
-
-datagenval = ImageDataGenerator(
+    
+    datagen = ImageDataGenerator(
+    horizontal_flip=True,
+    vertical_flip=True,
+    width_shift_range=0.1,
+    height_shift_range=0.1,
     rescale=1. / 255)
+'''
+
+datagen = ImageDataGenerator(
+   rescale=1. / 255,
+   shear_range=0.2,
+   zoom_range=0.2,
+   horizontal_flip=True)
+datagenval = ImageDataGenerator()
 
 ##############################################################################
 ################# TEST IMAGE SIZE ###########################################
@@ -33,7 +48,7 @@ datagenval = ImageDataGenerator(
 file = open('MODEL_OUTPUTS/image_sizetime.txt',mode='w')
 file.write("Image_Size,Start,End,Difference\n")
 
-for image_size in [50,80,100,150,200,250,300,400,500]:
+for image_size in [200]:
     start = time.time()
     vgg_ = VGG(False,IM_HEIGHT=image_size,IM_WIDTH=image_size)
     vgg_.train(train_directory_=TRAIN_DATA, validation_directory_=VALIDATE_DATA, model_description= "image_test_size" + str(image_size),
