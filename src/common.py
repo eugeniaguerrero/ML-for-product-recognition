@@ -1,4 +1,4 @@
-#File containing the main parameters used for the neural network
+##File containing the main parameters used for the neural network
 import os
 #vgg_net images MUST BE DIVISIBLE BY 4!!!
 
@@ -14,7 +14,7 @@ IM_WIDTH = 299'''
 PRETRAINED_MODEL = False
 NUMBER_CLASSES = 10
 BATCH_SIZE = 16
-NUMBER_EPOCHS = 10
+NUMBER_EPOCHS = 3
 NUMBER_CHANNELS = 3
 IMAGES_PER_FOLDER = 4
 SEND_TO_SLACK = False
@@ -29,9 +29,9 @@ JSON_LOG_FILE = os.path.join('MODEL_OUTPUTS','loss_log.json')
 JSON_OLD_LOGS_FOLDER = os.path.join('MODEL_OUTPUTS','old_json')
 
 SOURCE = os.path.join("DATA","product-image-dataset3")
-TRAIN_DATA = os.path.join("DATA","ftraining_data")#"FD_Feb22","training_data")
-VALIDATE_DATA = os.path.join("DATA","ftest_data")
-TEST_DATA = os.path.join("DATA","test_data")
+TRAIN_DATA = os.path.join("DATA","f_d22_training_data")#"March-18","training_data")
+VALIDATE_DATA = os.path.join("DATA","f_d22_validation_data")#"March-18","validation_data")
+TEST_DATA = os.path.join("DATA","March-18","test_data")
 DEBUG_FOLDER = os.path.join("DATA","DEBUGGING_DATA","debug_folder")
 
 
