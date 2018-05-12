@@ -46,6 +46,10 @@ def get_image(filepath):
 
 def dstack_folder_sequence(directory_, sequence_length):
     image_list = get_image_names(directory_)
+    if len(image_list) != sequence_length:
+        for i in range(len(image_list),sequence_length,1):
+            image_list.append(image_list[len(image_list)-1])
+
     if sequence_length != 1 and len(image_list) != sequence_length:
         print("Incompatible sequence {}".format(directory_))
         return

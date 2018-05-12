@@ -14,7 +14,7 @@ import time
 
 
 
-FD_DATA_LOC = os.path.join("DATA","ambient_data","fd_data")#"1104_raw_full_ambient")#,"1104_FD_Full_Set")
+FD_DATA_LOC = os.path.join("DATA","ambient_data","raw_data")#"1104_raw_full_ambient")#,"1104_FD_Full_Set")
 NORMAL_DATA_LOC =  os.path.join("DATA","ambient_data","raw_data")
 
 
@@ -41,7 +41,7 @@ file.write("Start,End,Difference\n")
 start = time.time()
 
 for FD_ in [1]:
-    
+
     if FD_ == 0:
         FD = "False"
         TRAIN_DATA = os.path.join(NORMAL_DATA_LOC,"training_data")
@@ -62,7 +62,7 @@ for FD_ in [1]:
                                          height_shift_range=0.1,channel_shift_range=0.1,shear_range=0.1,
                                          rotation_range = 10,rescale=1. / 255)
             datagenval = ImageDataGenerator(rescale= 1./255)
-            
+
         #STRING TO SAVE MODEL AS
         vals = "LR-" + str(lr) + "_C1-" + str(conv1_size) + "_C2-" + str(conv2_size) + "_DS-" + str(dense_size)
         vals +=  "_D-" + str(decay) + "_M-" + str(moment) + "_IM-" + str(IM_WIDTH) + "_FD-" + FD + "_Time_Stamp-" + str(time.time()) + "_Preprop-" + Preprop
@@ -122,7 +122,7 @@ for FD_ in [1]:
         FD = "True"
         TRAIN_DATA = os.path.join(FD_DATA_LOC,"training_data")
         VALIDATE_DATA = os.path.join(FD_DATA_LOC,"validation_data")
-    
+
     file = open('MODEL_OUTPUTS/image_sizetime.txt',mode='w')
     file.write("Image_Size,Start,End,Difference\n")
     for image_size in [50,100,150,200,250,300,350,400]:
@@ -137,13 +137,13 @@ for FD_ in [1]:
         conv2_size = 7
         conv1_size = 6
         lr=4
-    
+
         start = time.time()
-    
+
         #STRING TO SAVE MODEL AS
         vals = "LR-" + str(lr) + "_C1-" + str(conv1_size) + "_C2-" + str(conv2_size) + "_DS-" + str(dense_size)
         vals +=  "_D-" + str(decay) + "_M-" + str(moment) + "_IM-" + str(image_size) + "_FD-" + FD + "_Time_Stamp-" + str(time.time()) + "_Preprop-" + Preprop
-    
+
         vgg_ = VGG(False,IM_HEIGHT=IM_HEIGHT,IM_WIDTH=IM_WIDTH,lr=lr,conv1_size=conv1_size,conv2_size=conv2_size,dense_size=dense_size,decay=decay,moment=moment)
         vgg_.train(train_directory_=TRAIN_DATA, validation_directory_=VALIDATE_DATA, model_description= vals,
                epochs=NUMBER_EPOCHS,datagen=datagen,datagenval=datagenval)
