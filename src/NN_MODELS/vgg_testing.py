@@ -45,6 +45,7 @@ class VGG(object):
             self.model = load_model(cached_model)
 
         sgd = SGD(lr, decay=decay, momentum=moment, nesterov=True)
+        #self.model.compile(loss='categorical_crossentropy', optimizer=sgd,metrics = ['accuracy'])
         self.model.compile(loss='categorical_crossentropy', optimizer=sgd,metrics = ['accuracy'])
 
     def train(self,train_directory_, validation_directory_,model_description,epochs,datagen,datagenval):

@@ -76,7 +76,7 @@ def kernel_compare(individual_product, next_product):
             # checking to see if the pictures are different
             if (ssim_score < ssim_threshold):
                 gray_img[row:row + bl_h, col:col + bl_w] = grayA[row:row + bl_h, col:col + bl_w]
-                #color_img[row:row + bl_h, col:col + bl_w] = individual_product[row:row + bl_h, col:col + bl_w]
+                # color_img[row:row + bl_h, col:col + bl_w] = individual_product[row:row + bl_h, col:col + bl_w]
 
 
     thresh = 254.9
@@ -120,8 +120,8 @@ def kernel_compare(individual_product, next_product):
     x, y, w, h = cv2.boundingRect(largest_area)
 
     cropped_individual_product = individual_product[y: y + h, x: x + w]
-
     histogram_block_img = CLAHE_equalisation(cropped_individual_product)
+    histogram_block_img = histogram_block_img[0, :, :, :]
 
     # blank_square = np.zeros((h, w))
     # blank_square.fill(0)
@@ -170,6 +170,7 @@ def frame_difference_collection(source, destination, exceptions):
                 i += 1
 
     index = 0
+
     for _ in pictures:
 
         if index == len(pictures)-1:
@@ -182,6 +183,7 @@ def frame_difference_collection(source, destination, exceptions):
         new_img = kernel_compare(individual_product, next_product)
 
         # here we check whether frame differencing has detected movement
+
         if img_exception(new_img):
             file_name = 'exception' + str(index) + '_' + filename
             cv2.imwrite(os.path.join(exceptions, file_name), individual_product)
@@ -246,28 +248,24 @@ def main_diff(folder_set, data_path):
                 os.makedirs(diff_video_folder)
                 frame_difference_collection(video_folder, diff_video_folder, exceptions_class_folder)
                 my_count = my_count + 1
-                #avg_time = (time.time() - start_run)/my_count
-                #print("Avg time per set:", avg_time)
+                avg_time = (time.time() - start_run)/my_count
+                print("Avg time per set:", avg_time)
     return True
 
-#if __name__ == "__main__":
-#    start_run = time.time()
-#    print("Start Run")
-#    # The directory where the augmented images are going to be saved
-#
-#    dir = os.getcwd()
-#    src_dir = os.path.dirname(dir)
-#    Group_dir = os.path.dirname(src_dir)
-#    data_folder = 'DATA'
-#    data_path = os.path.join(Group_dir, data_folder)
-3
-#    my_folders = ['test_data', 'training_data', 'validation_data']
-#    # my_folders = ['sample1']
-#
-#    main_diff(my_folders, data_path)
-#
-#    end_run = time.time()
-#    print("Total Run Time (mins): ", (end_run - start_run)/60)
+if __name__ == "__main__":
+   start_run = time.time()
+   print("Start Run")
+   # The directory where the augmented images are going to be saved
+
+   dir = os.getcwd()
+   src_dir = os.path.dirname(dir)
+   Group_dir = os.path.dirname(src_dir)
+   data_folder = 'DATA'
+   data_path = os.path.join(Group_dir, data_folder, '1104_raw_full_ambient')
+   my_folders = ['validation_data', 'test_data','training_data']
 
 
+   main_diff(my_folders, data_path)
 
+   end_run = time.time()
+   print("Total Run Time (mins): ", (end_run - start_run)/60)

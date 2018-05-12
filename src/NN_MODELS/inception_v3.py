@@ -28,14 +28,16 @@ class INCEPTION_V3(object):
         if cached_model is not None:
             self.model = load_model(cached_model)
 
-    def train(self,train_directory_, validation_directory_,model_description,epochs):
+    def train(self,train_directory_, validation_directory_,model_description,epochs,datagen,datagenval):
         self.model_name += model_description
         #INITIALISE DATA INPUT
+        '''
         datagen = ImageDataGenerator(
             rescale=1. / 255,
             shear_range=0.2,
             zoom_range=0.2,
             horizontal_flip=True)
+        '''
 
         calls_ = logs()
 
@@ -45,7 +47,7 @@ class INCEPTION_V3(object):
             batch_size=BATCH_SIZE,
             class_mode="categorical")
 
-        validate_generator = datagen.flow_from_directory(
+        validate_generator = datagenval.flow_from_directory(
             validation_directory_,
             target_size=(IM_HEIGHT, IM_WIDTH),
             batch_size=BATCH_SIZE,

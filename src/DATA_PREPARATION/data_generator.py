@@ -109,6 +109,7 @@ class DataGenerator(object):
 
             # Get images
             x_out = dstack_folder_sequence(folder_names[i], self.sequence_length_)
+            print(folder_names[i])
 
             #  Pre process as time distributed set
             if self.time_distributed_:
@@ -118,6 +119,7 @@ class DataGenerator(object):
             # Pre process non time_distributed
             else:
                 for j in range(x_out.shape[0]):
+                    print(k)
                     X[k + j] = self.preprocessor.preprocess_images(x_out[None, j])  # input shape (1, h, w ,c)
 
             k = k + output_length
