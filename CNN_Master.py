@@ -1,6 +1,6 @@
-#from src.NN_MODELS.cnn_lstm import *
-from src.NN_MODELS.inception_v3_our_datagen import *
-from src.NN_MODELS.vgg_testing import *
+from src.NN_MODELS.cnn_lstm_ourdatagen import *
+#from src.NN_MODELS.inception_v3_our_datagen import *
+#from src.NN_MODELS.vgg_testing import *
 #from src.NN_MODELS. import *
 from src.common import *
 #from src.NN_MODELS.network_tests import *
@@ -54,20 +54,16 @@ for FD_ in [1]:
     for prep_ in [0,1]:
         if prep_ == 0:
             Preprop = "False"
-            datagen = ImageDataGenerator(rescale=1. / 255)
-            datagenval = ImageDataGenerator(rescale= 1./255)
         else:
             Preprop = "True"
-            datagen = ImageDataGenerator(horizontal_flip=True,vertical_flip=True,width_shift_range=0.1,
-                                         height_shift_range=0.1,channel_shift_range=0.1,shear_range=0.1,
-                                         rotation_range = 10,rescale=1. / 255)
-            datagenval = ImageDataGenerator(rescale= 1./255)
 
         #STRING TO SAVE MODEL AS
         vals = "LR-" + str(lr) + "_C1-" + str(conv1_size) + "_C2-" + str(conv2_size) + "_DS-" + str(dense_size)
         vals +=  "_D-" + str(decay) + "_M-" + str(moment) + "_IM-" + str(IM_WIDTH) + "_FD-" + FD + "_Time_Stamp-" + str(time.time()) + "_Preprop-" + Preprop
-        inc = INCEPTION_V3();
-        inc.train(train_directory_=TRAIN_DATA, validation_directory_=VALIDATE_DATA, model_description= "small_dataset" + "Preprop-" + Preprop,epochs=NUMBER_EPOCHS)#,datagen=datagen,datagenval=datagenval)
+        cnn = CNN_LSTM()
+        cnn.train(train_directory_= TRAIN_DATA, validation_directory_=VALIDATE_DATA, model_description="CNN", epochs=NUMBER_EPOCHS)
+        #inc = INCEPTION_V3();
+        #inc.train(train_directory_=TRAIN_DATA, validation_directory_=VALIDATE_DATA, model_description= "small_dataset" + "Preprop-" + Preprop,epochs=NUMBER_EPOCHS)#,datagen=datagen,datagenval=datagenval)
 
 end = time.time()
 diff = end-start
