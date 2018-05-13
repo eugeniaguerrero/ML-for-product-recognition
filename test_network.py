@@ -41,7 +41,7 @@ class TestNetwork(unittest.TestCase):
             predictions = NN.predict(images)
             print("Initial predictions are:" + str(predictions))
             if not PRETRAINED_MODEL:
-                self.assertTrue(np.max(predictions) - np.min(predictions) < 1) 
+                self.assertTrue(np.max(predictions) - np.min(predictions) < 1)
                 print("Starting with a pre-trained model")
             else:
                 print("Starting without a pre-trained model")

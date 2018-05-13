@@ -1,9 +1,11 @@
 ##File containing the main parameters used for the neural network
-import os
-#vgg_net images MUST BE DIVISIBLE BY 4!!!
 
-IM_HEIGHT = 250
-IM_WIDTH = 250
+
+import os
+
+#GANN MUST BE DIVISIBLE BY 4!!!
+IM_HEIGHT = 48
+IM_WIDTH = 48
 RAW_HEIGHT = 1024
 RAW_WIDTH = 1280
 
@@ -16,7 +18,7 @@ NUMBER_CLASSES = 20
 BATCH_SIZE = 8
 NUMBER_EPOCHS = 500
 NUMBER_CHANNELS = 3
-IMAGES_PER_FOLDER = 4
+IMAGES_PER_FOLDER = 12
 SEND_TO_SLACK = True
 
 CHECKPOINTS_FOLDER = os.path.join('MODEL_OUTPUTS','checkpoints')
@@ -27,6 +29,8 @@ TENSORBOARD_OLD_LOGS_FOLDER = os.path.join('MODEL_OUTPUTS','old_logs')
 INTERMEDIATE_FILE = os.path.join('MODEL_OUTPUTS','checkpoints','intermediate.hdf5')
 JSON_LOG_FILE = os.path.join('MODEL_OUTPUTS','loss_log.json')
 JSON_OLD_LOGS_FOLDER = os.path.join('MODEL_OUTPUTS','old_json')
+
+#THESE PARAMETERS BELOW ARE NOT USED IN MASTER SUBMITTED AS IT USES VGG_TESTING
 
 SOURCE = os.path.join("DATA","product-image-dataset3")
 TRAIN_DATA = os.path.join("DATA","f_d22_training_data")#"March-18","training_data")

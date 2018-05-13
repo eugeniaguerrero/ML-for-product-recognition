@@ -1,6 +1,7 @@
-#from src.NN_MODELS.cnn_lstm import *
-#from src.NN_MODELS.inception_v3 import *
+from src.NN_MODELS.cnn_lstm import *
+from src.NN_MODELS.inception_v3 import *
 from src.NN_MODELS.vgg_testing import *
+from src.NN_MODELS.gann_ import *
 #from src.NN_MODELS. import *
 from src.common import *
 #from src.NN_MODELS.network_tests import *
@@ -10,13 +11,15 @@ import keras
 from bayes_opt import BayesianOptimization
 import time
 
-FD_DATA_LOC = os.path.join("DATA","ambient_data","raw_data")#"1104_raw_full_ambient")#,"1104_FD_Full_Set")
+#Location of Frame Differencing
+FD_DATA_LOC = os.path.join("DATA","ambient_data","FD_data")#"1104_raw_full_ambient")#,"1104_FD_Full_Set")
+#Location of Normal Data
 NORMAL_DATA_LOC =  os.path.join("DATA","ambient_data","raw_data")
 
-
 ##############################################################################
-################# FRAME DIFF VS NON-FRAME DIFF ###########################################
-############################################################################
+################# FRAME DIFF VS NON-FRAME DIFF ##############################
+################# PREPROP VS NON-PREPROP ###################################
+###########################################################################
 
 IM_HEIGHT=250
 FD = "True"
@@ -29,15 +32,14 @@ dense_size = 8
 conv2_size = 7
 conv1_size = 6
 lr=4
-NUMBER_EPOCHS = 250
-IM_WIDTH=250
+NUMBER_EPOCHS = 2
+IM_WIDTH=100
 
-file = open('MODEL_OUTPUTS/Large_Dataset_Time_to_train.txt',mode='w')
+file = open('MODEL_OUTPUTS/Dataset_Time_to_train.txt',mode='w')
 file.write("Start,End,Difference\n")
 start = time.time()
 
-for FD_ in [1]:
-
+for FD_ in [0,1]:
     if FD_ == 0:
         FD = "False"
         TRAIN_DATA = os.path.join(NORMAL_DATA_LOC,"training_data")
@@ -47,7 +49,7 @@ for FD_ in [1]:
         TRAIN_DATA = os.path.join(FD_DATA_LOC,"training_data")
         VALIDATE_DATA = os.path.join(FD_DATA_LOC,"validation_data")
 
-    for prep_ in [0]:
+    for prep_ in [0,1]:
         if prep_ == 0:
             Preprop = "False"
             datagen = ImageDataGenerator(rescale=1. / 255)
@@ -59,13 +61,35 @@ for FD_ in [1]:
                                          rotation_range = 10,rescale=1. / 255)
             datagenval = ImageDataGenerator(rescale= 1./255)
 
-        #STRING TO SAVE MODEL AS
-        vals = "LR-" + str(lr) + "_C1-" + str(conv1_size) + "_C2-" + str(conv2_size) + "_DS-" + str(dense_size)
-        vals +=  "_D-" + str(decay) + "_M-" + str(moment) + "_IM-" + str(IM_WIDTH) + "_FD-" + FD + "_Time_Stamp-" + str(time.time()) + "_Preprop-" + Preprop
-        #inc = INCEPTION_V3();
-        #inc.train(train_directory_=TRAIN_DATA, validation_directory_=VALIDATE_DATA, model_description= "small_dataset" + "Preprop-" + Preprop,epochs=NUMBER_EPOCHS,datagen=datagen,datagenval=datagenval)
-        vgg_ = VGG(False,IM_HEIGHT=IM_HEIGHT,IM_WIDTH=IM_WIDTH,lr=lr,conv1_size=conv1_size,conv2_size=conv2_size,dense_size=dense_size,decay=decay,moment=moment)
-        vgg_.train(train_directory_=TRAIN_DATA, validation_directory_=VALIDATE_DATA, model_description= "full_dataset_"+ vals,epochs=NUMBER_EPOCHS,datagen=datagen,datagenval=datagenval)
+        for model in ["Vgg","Inception","CNN","GANN"]:
+
+            if model == "Inception":
+                vals = "LR-" + str(lr) + "_D-" + str(decay) + "_M-" + str(moment) + "_IM-" + str(IM_WIDTH) + "_FD-" + FD
+                vals += "_Time_Stamp-" + str(time.time()) + "_Preprop-" + Preprop
+                inc = INCEPTION_V3(lr=0.0001,cached_model= None,IM_HEIGHT=IM_HEIGHT,IM_WIDTH=IM_WIDTH)
+                inc.train(
+                train_directory_=TRAIN_DATA, validation_directory_= VALIDATE_DATA,
+                model_description= vals,epochs=NUMBER_EPOCHS,
+                datagen=datagen,datagenval=datagenval)
+
+            elif model == "Vgg":
+                vals = "LR-" + str(lr) + "_C1-" + str(conv1_size) + "_C2-" + str(conv2_size) + "_DS-" + str(dense_size)
+                vals +=  "_D-" + str(decay) + "_M-" + str(moment) + "_IM-" + str(IM_WIDTH) + "_FD-" + FD + "_Time_Stamp-" + str(time.time()) + "_Preprop-" + Preprop
+
+                vgg_ = VGG(IM_HEIGHT=IM_HEIGHT,IM_WIDTH=IM_WIDTH,lr=lr,conv1_size=conv1_size,conv2_size=conv2_size,dense_size=dense_size,decay=decay,moment=moment)
+                vgg_.train(train_directory_=TRAIN_DATA, validation_directory_=VALIDATE_DATA, model_description=vals,epochs=NUMBER_EPOCHS,datagen=datagen,datagenval=datagenval)
+
+            elif model == "CNN":
+                if FD_ == 0 and prep_ == 0:
+                    vals = "LR-" + str(lr) + "_D-" + str(decay) + "_M-" + str(moment) + "_IM-" + str(IM_WIDTH) + "_FD-" + FD
+                    vals += "_Time_Stamp-" + str(time.time()) + "_Preprop-" + Preprop
+                    cnn = CNN_LSTM(lr=0.01)
+                    cnn.train(train_directory_= TRAIN_DATA, validation_directory_=VALIDATE_DATA, model_description=vals, epochs=NUMBER_EPOCHS)
+            elif model == "GANN":
+                if prep_ == 0:
+                    GANN = WGANN()
+                    GANN.train(train_directory_= TRAIN_DATA, validation_directory_=VALIDATE_DATA, model_description = "Gann",epochs=NUMBER_EPOCHS)
+
 
 end = time.time()
 diff = end-start
@@ -76,23 +100,7 @@ file.close()
 ################# TEST IMAGE SIZE ###########################################
 ############################################################################
 
-'''
-#WORKS!! - 72%
-#Fails over 300
-datagen = ImageDataGenerator(
-    horizontal_flip=True,
-        vertical_flip=True,
-    width_shift_range=0.1,
-    height_shift_range=0.1,
-    channel_shift_range=0.1,
-    shear_range=0.1,
-    rotation_range = 10,
-    rescale=1. / 255)
-'''
 
-#just horiz flip fails shear range fails too
-#datagen = ImageDataGenerator(
-    #rescale=1. / 255)
 '''
 datagen = ImageDataGenerator(
     horizontal_flip=True,
@@ -154,6 +162,7 @@ for FD_ in [1]:
 ################# OPTIMISE NETWORK ###########################################
 ############################################################################
 
+'''
 IM_HEIGHT=250
 FD = "True"
 Preprop = "True"
@@ -214,6 +223,13 @@ def return_grid(value,dist):
     grid = np.arange(value[0],value[1]+dist/10,dist/10,dtype=np.float64)
     return grid
 
+'''
+##############################################################################
+################# LR vs LR_DECAY GRID #######################################
+############################################################################
+
+'''
+#Run a 2D grid of the network to determine best parameters
 def minimise_lr_and_lr_decay():
     global kwargs
     global lr
@@ -224,11 +240,10 @@ def minimise_lr_and_lr_decay():
     max_lr = None
     max_lr_dec = None
     max_val = None
-    dist = 5
-    grid = [3,3.5,4,4.5,5,5.5,6]#return_grid([3,8], dist)
-    dist2 = 6
-    grid2 = [0]
-    #grid2 = [0.1,8]
+    dist = 6-3
+    grid = return_grid([3,6], dist)
+    dist2 = 8-0.1
+    grid2 = return_grid([0.1,8], dist)
     print("LR_GRID is " + str(grid))
     print("LR_Decay is " + str(grid2))
     for lr_decay in grid2:
@@ -246,8 +261,12 @@ def minimise_lr_and_lr_decay():
     print ("Maximum Val was : " + str(max_val) + " Lr " + str(max_lr) + " lr_dec " + str(max_lr_dec))
     NUMBER_EPOCHS = 70
 
-
 minimise_lr_and_lr_decay()
+'''
+
+##############################################################################
+################# BAYESIAN OPTIMISATION #####################################
+############################################################################
 
 '''
 bo = BayesianOptimization(lambda conv1_size,conv2_size,dense_size,moment: get_vals(conv1_size,conv2_size,dense_size,moment),

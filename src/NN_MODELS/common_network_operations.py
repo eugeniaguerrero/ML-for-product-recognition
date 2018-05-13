@@ -3,8 +3,15 @@ import keras
 from src.DATA_PREPARATION.folder_manipulation import *
 from scipy import stats
 
-#COMBINE ALL 3 into one??
+#CREATE FOLDER SUBSTRUCTURE REQUIRED TO RUN MODEL
+def create_folder_structure():
+    folders = ["MODEL_OUTPUTS",os.path.join("MODEL_OUTPUTS","checkpoints")]
+    for folder in folders:
+        if not os.path.exists(folder):
+            os.makedirs(folder)
 
+
+#AFTER TRAINING MOVE ALL MODEL OUTPUTS TO RELEVANT FOLDERS WITH CORRECT NAMING
 def clean_up(model_name):
     to_clean = [TENSORBOARD_LOGS_FOLDER,JSON_LOG_FILE]#,MODEL_SAVE_FOLDER]
     to_make = [TENSORBOARD_OLD_LOGS_FOLDER,JSON_OLD_LOGS_FOLDER]#,OLD_MODELS_FOLDER]
@@ -27,7 +34,7 @@ def clean_up(model_name):
         print("Data is in : " + to_move + "/" + new_name)
 
 
-
+#
 def find_incorrect_classifications(directory_, NN): # pragma: no cover
     incpred = "incorrect_predictions"
     if not os.path.exists(incpred):
@@ -51,10 +58,6 @@ def find_incorrect_classifications(directory_, NN): # pragma: no cover
             resized_image = get_image(filepath)#np.squeeze(get_image(filepath),axis=0)
 
             predictions = NN.predict(resized_image)
-            #print(predictions)
-            #print(np.argmax(predictions))
-            #print(category)
-            #print("***********")
             if not os.path.exists(os.path.join(incpred, str(np.argmax(predictions)))):
                 os.makedirs(os.path.join(incpred, str(np.argmax(predictions))))
             fileto2 = os.path.join(incpred, str(np.argmax(predictions)), str(count) + image)
@@ -62,7 +65,6 @@ def find_incorrect_classifications(directory_, NN): # pragma: no cover
             preds.append(np.argmax(predictions))
             if np.argmax(predictions) != category:
                 fileto = os.path.join(incpred, folder, image)
-                #print("Saving file to : " + fileto)
                 shutil.copyfile(filepath, fileto)
                 incorrect += 1
             count += 1
@@ -78,7 +80,7 @@ def find_incorrect_classifications(directory_, NN): # pragma: no cover
         count = 0
         preds = []
 
-
+#RETURNS A CALLBACK OBJECT WITH THE RELEVANT PARAMETERS FOR TENSORBOARD
 def get_Tensorboard(): # pragma: no cover
     tensor_log = keras.callbacks.TensorBoard(log_dir=TENSORBOARD_LOGS_FOLDER,
                                 histogram_freq=0,
@@ -91,6 +93,7 @@ def get_Tensorboard(): # pragma: no cover
                                 embeddings_metadata=None)
     return tensor_log
 
+#RETURNS A CALLBACK OBJECT TO SAVE THE MODEL AFTER EACH EPOCH
 def get_model_checkpoint(): # pragma: no cover
     model_check = keras.callbacks.ModelCheckpoint(filepath=INTERMEDIATE_FILE,
                                     monitor='val_loss',

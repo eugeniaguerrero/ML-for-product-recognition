@@ -1,3 +1,5 @@
+#THIS FILE CONTAINS THE CALLBACKS USED DURING NN MODEL TRAINING
+#WRITING TO A JSON and SENDING POSTS TO SLACK
 from keras.callbacks import LambdaCallback
 import json
 import requests
@@ -124,4 +126,3 @@ class logs(object):
         cleanup_callback = LambdaCallback(
             on_train_end=lambda logs: [
                 p.terminate() for p in processes if p.is_alive()])"""
-
