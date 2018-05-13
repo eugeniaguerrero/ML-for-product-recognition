@@ -10,7 +10,7 @@ from src.DATA_PREPARATION.folder_manipulation import *
 from src.NN_MODELS.common_network_operations import *
 
 class VGG(object):
-    def __init__(self,output = True,lr=2,conv1_size = 5,conv2_size = 6,dense_size = 8,decay = 6,moment = 0.9,cached_model= None,IM_HEIGHT=100,IM_WIDTH=100):
+    def __init__(self,output = True,lr=2,conv1_size = 6,conv2_size = 7,dense_size = 8,decay = 6,moment = 0.9,cached_model= None,IM_HEIGHT=100,IM_WIDTH=100):
         self.model_name = "vgg_net"
         self.output = output
         self.model_input = (1, IM_HEIGHT, IM_WIDTH, NUMBER_CHANNELS)
@@ -45,6 +45,7 @@ class VGG(object):
             self.model = load_model(cached_model)
 
         sgd = SGD(lr, decay=decay, momentum=moment, nesterov=True)
+        #self.model.compile(loss='categorical_crossentropy', optimizer=sgd,metrics = ['accuracy'])
         self.model.compile(loss='categorical_crossentropy', optimizer=sgd,metrics = ['accuracy'])
 
     def train(self,train_directory_, validation_directory_,model_description,epochs,datagen,datagenval):

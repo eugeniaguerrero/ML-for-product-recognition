@@ -6,9 +6,9 @@ from scipy import stats
 #COMBINE ALL 3 into one??
 
 def clean_up(model_name):
-    to_clean = [TENSORBOARD_LOGS_FOLDER,JSON_LOG_FILE,MODEL_SAVE_FOLDER]
-    to_make = [TENSORBOARD_OLD_LOGS_FOLDER,JSON_OLD_LOGS_FOLDER,OLD_MODELS_FOLDER]
-    extension = ['','.json','.hdf5']
+    to_clean = [TENSORBOARD_LOGS_FOLDER,JSON_LOG_FILE]#,MODEL_SAVE_FOLDER]
+    to_make = [TENSORBOARD_OLD_LOGS_FOLDER,JSON_OLD_LOGS_FOLDER]#,OLD_MODELS_FOLDER]
+    extension = ['','.json']#,'.hdf5']
 
     for ext,folder,to_move in zip(extension,to_make,to_clean):
         if not os.path.exists(folder):

@@ -129,12 +129,12 @@ def frame_difference_collection(source, destination, exceptions):
 
         kernelized_img = kernel_compare(individual_product, next_product)
 
-        # histogram equalisation
         histogram_img = CLAHE_equalisation(kernelized_img)
 
         new_img = histogram_img[0, :, :, :]
 
-        # here we check whether frame differencing has detected movement and potentially add as an exception
+        # here we check whether frame differencing has detected movement
+
         if img_exception(new_img):
             file_name = 'exception' + str(index) + '_' + filename
             cv2.imwrite(os.path.join(exceptions, file_name), individual_product)

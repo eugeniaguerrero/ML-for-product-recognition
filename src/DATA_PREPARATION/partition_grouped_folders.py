@@ -20,7 +20,7 @@ import shutil
 # get_timestamp returns the time stamp substring from the file name
 def get_timestamp(filename):
     start = filename.find('_') + 1
-    end = filename.rfind('_') - 2
+    end = filename.rfind('_') - 10
     return filename[start:end]
 
 def sort_data_folders(source,train,test,validate):
@@ -88,7 +88,7 @@ def sort_data_folders(source,train,test,validate):
         #Split random list into test, validation and training directories
         prefix = "VID"
         path = os.path.join(source_dir, subdir)
-        required_frames = 4
+        required_frames = 12
         j=0
         while(j < (n_groups*test_pct)):
             if list(files.values()).count(groups[j]) == required_frames:
@@ -117,7 +117,7 @@ def sort_data_folders(source,train,test,validate):
                         shutil.copy(os.path.join(path, file_name), video_folder)
             j+=1
 
-source = "product-image-dataset"
+source = "ambient-product-image-dataset"
 train = "training_data"
 validate = "validation_data"
 test = "test_data"

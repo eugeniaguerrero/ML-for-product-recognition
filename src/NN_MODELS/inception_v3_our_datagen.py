@@ -47,17 +47,17 @@ class INCEPTION_V3(object):
 
         # NOTE NO SCALING APPLIED YET!
         params_val = {'dir': validation_directory_,
-                  'batch_size': 32,
+                  'batch_size': 36,
                   'shuffle': True,
-                  'sequence_length' : 1}
+                      'sequence_length' : 12}
 
         validation_generator = DataGenerator(**params_val)
         validate_gen = validation_generator.generate()
 
         params_train = {'dir': train_directory_,
-                      'batch_size': 32,
+                      'batch_size': 36,
                       'shuffle': True,
-                      'sequence_length': 1}
+                        'sequence_length': 12}
 
         train_generator = DataGenerator(**params_train)
         train_gen = train_generator.generate()
@@ -66,8 +66,8 @@ class INCEPTION_V3(object):
         test_in = train_gen.__next__()
         test_in_val = validate_gen.__next__()
 
-        steps_per_epoch_ =  train_generator.steps_per_epoch_  # 489
-        validation_steps_ = validation_generator.steps_per_epoch_ # 56
+        steps_per_epoch_ =  train_generator.batches_per_epoch  # 489
+        validation_steps_ = validation_generator.batches_per_epoch # 56
         ##########################
 
         calls_ = logs()

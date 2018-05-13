@@ -1,5 +1,5 @@
 #from src.NN_MODELS.cnn_lstm import *
-from src.NN_MODELS.inception_v3 import *
+from src.NN_MODELS.inception_v3_our_datagen import *
 from src.NN_MODELS.vgg_testing import *
 #from src.NN_MODELS. import *
 from src.common import *
@@ -14,7 +14,7 @@ import time
 
 
 
-FD_DATA_LOC = os.path.join("DATA","ambient_data","fd_data")#"1104_raw_full_ambient")#,"1104_FD_Full_Set")
+FD_DATA_LOC = os.path.join("DATA","ambient_data","raw_data")#"1104_raw_full_ambient")#,"1104_FD_Full_Set")
 NORMAL_DATA_LOC =  os.path.join("DATA","ambient_data","raw_data")
 
 
@@ -67,9 +67,7 @@ for FD_ in [1]:
         vals = "LR-" + str(lr) + "_C1-" + str(conv1_size) + "_C2-" + str(conv2_size) + "_DS-" + str(dense_size)
         vals +=  "_D-" + str(decay) + "_M-" + str(moment) + "_IM-" + str(IM_WIDTH) + "_FD-" + FD + "_Time_Stamp-" + str(time.time()) + "_Preprop-" + Preprop
         inc = INCEPTION_V3();
-        inc.train(train_directory_=TRAIN_DATA, validation_directory_=VALIDATE_DATA, model_description= "small_dataset" + "Preprop-" + Preprop,epochs=NUMBER_EPOCHS,datagen=datagen,datagenval=datagenval)
-        #vgg_ = VGG(False,IM_HEIGHT=IM_HEIGHT,IM_WIDTH=IM_WIDTH,lr=lr,conv1_size=conv1_size,conv2_size=conv2_size,dense_size=dense_size,decay=decay,moment=moment)
-        #vgg_.train(train_directory_=TRAIN_DATA, validation_directory_=VALIDATE_DATA, model_description= "full_dataset_"+ vals,epochs=NUMBER_EPOCHS,datagen=datagen,datagenval=datagenval)
+        inc.train(train_directory_=TRAIN_DATA, validation_directory_=VALIDATE_DATA, model_description= "small_dataset" + "Preprop-" + Preprop,epochs=NUMBER_EPOCHS)#,datagen=datagen,datagenval=datagenval)
 
 end = time.time()
 diff = end-start
