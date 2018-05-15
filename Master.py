@@ -49,7 +49,7 @@ for FD_ in [0,1]:
         TRAIN_DATA = os.path.join(FD_DATA_LOC,"training_data")
         VALIDATE_DATA = os.path.join(FD_DATA_LOC,"validation_data")
 
-    for prep_ in [0,1]:
+    for prep_ in [0]:#,1]:
         if prep_ == 0:
             Preprop = "False"
             datagen = ImageDataGenerator(rescale=1. / 255)
@@ -61,7 +61,7 @@ for FD_ in [0,1]:
                                          rotation_range = 10,rescale=1. / 255)
             datagenval = ImageDataGenerator(rescale= 1./255)
 
-        for model in ["Vgg","Inception","CNN","GANN"]:
+        for model in ["GANN","Vgg","Inception","CNN"]:
 
             if model == "Inception":
                 vals = "LR-" + str(lr) + "_D-" + str(decay) + "_M-" + str(moment) + "_IM-" + str(IM_WIDTH) + "_FD-" + FD
