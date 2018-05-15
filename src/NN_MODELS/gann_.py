@@ -44,6 +44,7 @@ class WGANN(object):
         self.G = self.create_G()
         self.G.summary()
         self.D = self.create_D()
+        self.D.summary()
         self.DG = self.create_combined()
         self.DG.get_layer('D').trainable = False  # freeze D in generator training faze
         self.DG.compile(optimizer=RMSprop(lr=0.00005),loss=[self.wasserstein, 'sparse_categorical_crossentropy'])
@@ -91,14 +92,15 @@ class WGANN(object):
 
         output_is_fake = Dense(
             1, activation='linear', name='output_is_fake')(features)
-
+        #CHANGED
         output_class = Dense(
-            10, activation='softmax', name='output_class')(features)
+            NUMBER_CLASSES, activation='softmax', name='output_class')(features)
 
         return Model(inputs=[input_image], outputs=[output_is_fake, output_class], name='D')
 
     def create_G(self):
-        DICT_LEN = 10
+        #CHANGED
+        DICT_LEN = NUMBER_CLASSES
         EMBEDDING_LEN = self.Z_SIZE
 
         # weights are initlaized from normal distribution with below params
@@ -163,7 +165,8 @@ class WGANN(object):
     def generate_samples(self,n=0, save=True):
         global FOLDER_NUMBER
         global ITERATION
-        generated_classes = np.array(list(range(0, 10)) * 10)
+        #CHANGED
+        generated_classes = np.array(list(range(0, NUMBER_CLASSES)) * NUMBER_CLASSES)
         generated_images = self.G.predict([self.samples_zz, generated_classes.reshape(-1, 1)])
         #print(generated_images.shape)
         if FOLDER_NUMBER == 0:
@@ -228,17 +231,31 @@ class WGANN(object):
         #self.sw.add_summary(s, step)
         #self.sw.flush()
 
+    def train(self,train_directory_, validation_directory_,model_description,epochs):
 
-        # fake = 1
-        # real = -1
+        params_val = {'dir': validation_directory_,
+                  'batch_size': 36,
+                  'shuffle': True,
+                  'sequence_length' : 12,'time_distributed' : False}
 
-    def train(self):
+        validation_generator = DataGenerator(**params_val)
+        validate_gen = validation_generator.generate()
 
-        
-        params = {'dir': 'training_data', 'batch_size': self.BATCH_SIZE,'shuffle': True}
-        train_data_gen = DataGenerator(**params).generate()
-        params2 = {'dir': 'validation_data', 'batch_size': self.BATCH_SIZE, 'shuffle': True}
-        validation_data_gen = DataGenerator(**params).generate()
+        params_train = {'dir': train_directory_,
+                      'batch_size': 36,
+                      'shuffle': True,
+                        'sequence_length': 12,'time_distributed' : False}
+
+        train_generator = DataGenerator(**params_train)
+        train_gen = train_generator.generate()
+
+        #CHECKS!################
+        test_in = train_gen.__next__()
+        test_in_val = validate_gen.__next__()
+
+        steps_per_epoch_ =  train_generator.batches_per_epoch
+        validation_steps_ = validation_generator.batches_per_epoch
+        ##########################
 
         progress_bar = Progbar(target=self.ITERATIONS)
 
@@ -250,18 +267,13 @@ class WGANN(object):
         for it in range(self.ITERATIONS):
 
             # load mnist data
-            (X_train, y_train) = train_data_gen.__next__()
-            (X_test, y_test) = validation_data_gen.__next__()
-            #(X_train, y_train), (X_test, y_test) = mnist.load_data()
+            (X_train, y_train) = train_gen.__next__()
+            (X_test, y_test) = validate_gen.__next__()
+            y_test = np.argmax(y_test,axis = 1)
+            y_train = np.argmax(y_train, axis = 1)
 
-            # use all available 70k samples
-            #X_train = np.concatenate((X_train, X_test))
-            #y_train = np.concatenate((y_train, y_test))
-
-            # convert to -1..1 range, reshape to (sample_i, 28, 28, 1)
-            #X_train = (X_train.astype(np.float32) - 127.5) / 127.5
-            #X_train = np.expand_dims(X_train, axis=3)
-            #print(self.D_true_losses)
+            print(X_train.shape)
+            print(y_train.shape)
 
 
             if len(self.D_true_losses) > 0:
@@ -307,18 +319,10 @@ class WGANN(object):
 
                 # 1.1: maximize D output on reals === minimize -1*(D(real))
                 # load mnist data
-                (X_train, y_train) = train_data_gen.__next__()
-                (X_test, y_test) = validation_data_gen.__next__()
-
-                # IF TESTING MNIST
-                #(X_train, y_train), (X_test, y_test) = mnist.load_data()
-                # use all available 70k samples
-                #X_train = np.concatenate((X_train, X_test))
-                #y_train = np.concatenate((y_train, y_test))
-                #X_train = np.expand_dims(X_train, axis=3)
-
-                # convert to -1..1 range, reshape to (sample_i, 28, 28, 1)
-                #X_train = (X_train.astype(np.float32) - 127.5) / 127.5
+                (X_train, y_train) = train_gen.__next__()
+                (X_test, y_test) = validate_gen.__next__()
+                y_test = np.argmax(y_test, axis = 1)
+                y_train = np.argmax(y_train, axis = 1)
 
                 # draw random samples from real images
                 index = np.random.choice(len(X_train), self.BATCH_SIZE, replace=False)
@@ -331,7 +335,8 @@ class WGANN(object):
                 # 1.2: minimize D output on fakes
 
                 zz = np.random.normal(0., 1., (self.BATCH_SIZE, self.Z_SIZE))
-                generated_classes = np.random.randint(0, 10, self.BATCH_SIZE)
+                #CHANGED
+                generated_classes = np.random.randint(0, NUMBER_CLASSES, self.BATCH_SIZE)
                 generated_images = self.G.predict([zz, generated_classes.reshape(-1, 1)])
 
                 D_loss = self.D.train_on_batch(generated_images, [np.ones(self.BATCH_SIZE), generated_classes])
@@ -350,7 +355,8 @@ class WGANN(object):
             #         l.rate = 0.
 
             zz = np.random.normal(0., 1., (self.BATCH_SIZE, self.Z_SIZE))
-            generated_classes = np.random.randint(0, 10, self.BATCH_SIZE)
+            #CHANGED
+            generated_classes = np.random.randint(0, NUMBER_CLASSES, self.BATCH_SIZE)
 
             DG_loss = self.DG.train_on_batch(
                 [zz, generated_classes.reshape((-1, 1))],
@@ -365,7 +371,3 @@ class WGANN(object):
         if not os.path.exists(MODEL_SAVE_FOLDER):
             os.makedirs(MODEL_SAVE_FOLDER)
         self.model.save(os.path.join(MODEL_SAVE_FOLDER, str(self.model_name + '.hdf5')))
-
-
-wg = WGANN()
-wg.train()

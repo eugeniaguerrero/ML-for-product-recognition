@@ -9,12 +9,11 @@ from src.DATA_PREPARATION.folder_manipulation import *
 from src.NN_MODELS.common_network_operations import *
 
 class INCEPTION_V3(object):
-    def __init__(self,output = True,lr=0.0001,cached_model= None):
+    def __init__(self,lr=0.0001,cached_model= None,IM_HEIGHT=100,IM_WIDTH=100):
         self.model_name = "inception_v3"
         self.model_input = (1, IM_HEIGHT, IM_WIDTH, NUMBER_CHANNELS)
         # create the base pre-trained model
         self.base_model = InceptionV3(weights='imagenet', include_top=False)
-        self.output = output
         # add a global spatial average pooling layer
         x = self.base_model.output
         x = GlobalAveragePooling2D()(x)
@@ -30,14 +29,7 @@ class INCEPTION_V3(object):
 
     def train(self,train_directory_, validation_directory_,model_description,epochs,datagen,datagenval):
         self.model_name += model_description
-        #INITIALISE DATA INPUT
-        '''
-        datagen = ImageDataGenerator(
-            rescale=1. / 255,
-            shear_range=0.2,
-            zoom_range=0.2,
-            horizontal_flip=True)
-        '''
+        create_folder_structure()
 
         calls_ = logs()
 
@@ -63,18 +55,16 @@ class INCEPTION_V3(object):
 
         # train the model on the new data for a few epochs
 
-        if self.output:
-            self.model.fit_generator(train_generator, validation_data=validate_generator,callbacks=[calls_.json_logging_callback,
-                                                             calls_.slack_callback,keras.callbacks.TerminateOnNaN(),
-                                                                get_model_checkpoint(),get_Tensorboard()],epochs=epochs)
-            print("Model saved to " + os.path.join(MODEL_SAVE_FOLDER, self.model_name + "_Part_1" + '.hdf5'))
-            if not os.path.exists(MODEL_SAVE_FOLDER):
-                os.makedirs(MODEL_SAVE_FOLDER)
-            self.model.save(os.path.join(MODEL_SAVE_FOLDER, str(self.model_name + "_Part_1" '.hdf5')))
-            clean_up(self.model_name + "_Part_1")
 
-        else:
-            self.model.fit_generator(train_generator, validation_data=validate_generator,epochs=epochs)
+        self.model.fit_generator(train_generator, validation_data=validate_generator,callbacks=[calls_.json_logging_callback,
+                                                         calls_.slack_callback,keras.callbacks.TerminateOnNaN(),
+                                                            get_model_checkpoint(),get_Tensorboard()],epochs=epochs)
+        print("Model saved to " + os.path.join(MODEL_SAVE_FOLDER, self.model_name + "_Part_1" + '.hdf5'))
+        if not os.path.exists(MODEL_SAVE_FOLDER):
+            os.makedirs(MODEL_SAVE_FOLDER)
+        self.model.save(os.path.join(MODEL_SAVE_FOLDER, str(self.model_name + "_Part_1" '.hdf5')))
+        clean_up(self.model_name + "_Part_1")
+
         # at this point, the top layers are well trained and we can start fine-tuning
         # convolutional layers from inception V3. We will freeze the bottom N layers
         # and train the remaining top layers.
@@ -98,30 +88,18 @@ class INCEPTION_V3(object):
 
         # we train our model again (this time fine-tuning the top 2 inception blocks
         # alongside the top Dense layers
-        if self.output:
-            self.model.fit_generator(train_generator, validation_data=validate_generator,callbacks=[calls_.json_logging_callback,
-                                                                            calls_.slack_callback,keras.callbacks.TerminateOnNaN(),
-                                                                                get_model_checkpoint(),get_Tensorboard()],epochs=epochs)
-            current_directory = os.path.dirname(os.path.abspath(__file__))
-            print("Model saved to " + os.path.join(MODEL_SAVE_FOLDER, self.model_name + "_Part_2" + '.hdf5'))
-            if not os.path.exists(MODEL_SAVE_FOLDER):
-                os.makedirs(MODEL_SAVE_FOLDER)
-            self.model.save(os.path.join(MODEL_SAVE_FOLDER,str(self.model_name + "_Part_2" '.hdf5')))
+        self.model.fit_generator(train_generator, validation_data=validate_generator,callbacks=[calls_.json_logging_callback,
+                                                                        calls_.slack_callback,keras.callbacks.TerminateOnNaN(),
+                                                                            get_model_checkpoint(),get_Tensorboard()],epochs=epochs)
+        current_directory = os.path.dirname(os.path.abspath(__file__))
+        print("Model saved to " + os.path.join(MODEL_SAVE_FOLDER, self.model_name + "_Part_2" + '.hdf5'))
+        if not os.path.exists(MODEL_SAVE_FOLDER):
+            os.makedirs(MODEL_SAVE_FOLDER)
+        self.model.save(os.path.join(MODEL_SAVE_FOLDER,str(self.model_name + "_Part_2" '.hdf5')))
 
-            clean_up(self.model_name + "_Part_2")
-        else:
-            self.model.fit_generator(train_generator, validation_data=validate_generator, epochs=epochs)
-
+        clean_up(self.model_name + "_Part_2")
 
     def predict(self,input_data):
-        """
-        Given data from 1 frame, predict where the ships should be sent.
-
-        :param input_data: numpy array of shape (PLANET_MAX_NUM, PER_PLANET_FEATURES)
-        :return: 1-D numpy array of length (PLANET_MAX_NUM) describing percentage of ships
-        that should be sent to each planet
-        """
-        # CHANGED THIS!!!!
         input_data = input_data / 255
         predictions = self.model.predict(input_data, verbose=False)
         return np.array(predictions[0])
