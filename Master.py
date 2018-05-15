@@ -61,7 +61,7 @@ for FD_ in [1]:#,1]:
                                          rotation_range = 10,rescale=1. / 255)
             datagenval = ImageDataGenerator(rescale= 1./255)
 
-        for model in ["GANN"]:#,"Vgg","Inception","CNN"]:
+        for model in ["GANN","Vgg","Inception","CNN"]:
 
             if model == "Inception":
                 vals = "LR-" + str(lr) + "_D-" + str(decay) + "_M-" + str(moment) + "_IM-" + str(IM_WIDTH) + "_FD-" + FD
