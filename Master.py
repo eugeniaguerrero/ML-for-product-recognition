@@ -12,7 +12,7 @@ from bayes_opt import BayesianOptimization
 import time
 
 #Location of Frame Differencing
-FD_DATA_LOC = os.path.join("DATA","ambient_data","FD_data")#"1104_raw_full_ambient")#,"1104_FD_Full_Set")
+FD_DATA_LOC = os.path.join("DATA","ambient_data","fd_data")#"1104_raw_full_ambient")#,"1104_FD_Full_Set")
 #Location of Normal Data
 NORMAL_DATA_LOC =  os.path.join("DATA","ambient_data","raw_data")
 
@@ -32,14 +32,14 @@ dense_size = 8
 conv2_size = 7
 conv1_size = 6
 lr=4
-NUMBER_EPOCHS = 2
+NUMBER_EPOCHS = 150
 IM_WIDTH=100
 
 file = open('MODEL_OUTPUTS/Dataset_Time_to_train.txt',mode='w')
 file.write("Start,End,Difference\n")
 start = time.time()
 
-for FD_ in [0,1]:
+for FD_ in [1]:#,1]:
     if FD_ == 0:
         FD = "False"
         TRAIN_DATA = os.path.join(NORMAL_DATA_LOC,"training_data")
@@ -49,7 +49,7 @@ for FD_ in [0,1]:
         TRAIN_DATA = os.path.join(FD_DATA_LOC,"training_data")
         VALIDATE_DATA = os.path.join(FD_DATA_LOC,"validation_data")
 
-    for prep_ in [0,1]:
+    for prep_ in [0]:#,1]:
         if prep_ == 0:
             Preprop = "False"
             datagen = ImageDataGenerator(rescale=1. / 255)
@@ -61,7 +61,7 @@ for FD_ in [0,1]:
                                          rotation_range = 10,rescale=1. / 255)
             datagenval = ImageDataGenerator(rescale= 1./255)
 
-        for model in ["Vgg","Inception","CNN","GANN"]:
+        for model in ["GANN"]:#,"Vgg","Inception","CNN"]:
 
             if model == "Inception":
                 vals = "LR-" + str(lr) + "_D-" + str(decay) + "_M-" + str(moment) + "_IM-" + str(IM_WIDTH) + "_FD-" + FD
