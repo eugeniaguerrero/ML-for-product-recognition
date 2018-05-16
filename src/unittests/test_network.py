@@ -1,3 +1,8 @@
+import os, sys, inspect
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+parentdir = os.path.dirname(parentdir)
+sys.path.insert(0,parentdir)
 from src.NN_MODELS.vgg_net import *
 from src.NN_MODELS.inception_v3 import *
 from src.DATA_PREPARATION.folder_manipulation import *

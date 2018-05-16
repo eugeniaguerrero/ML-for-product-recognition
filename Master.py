@@ -39,7 +39,7 @@ file = open('MODEL_OUTPUTS/Dataset_Time_to_train.txt',mode='w')
 file.write("Start,End,Difference\n")
 start = time.time()
 
-for FD_ in [1]:#,1]:
+for FD_ in [0,1]:
     if FD_ == 0:
         FD = "False"
         TRAIN_DATA = os.path.join(NORMAL_DATA_LOC,"training_data")
@@ -49,7 +49,7 @@ for FD_ in [1]:#,1]:
         TRAIN_DATA = os.path.join(FD_DATA_LOC,"training_data")
         VALIDATE_DATA = os.path.join(FD_DATA_LOC,"validation_data")
 
-    for prep_ in [0]:#,1]:
+    for prep_ in [0,1]:
         if prep_ == 0:
             Preprop = "False"
             datagen = ImageDataGenerator(rescale=1. / 255)

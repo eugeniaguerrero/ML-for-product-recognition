@@ -1,8 +1,17 @@
 Summary:
 
 This library contains functions to contrast and compare different
-network architectures with additional features such as Frame-Differencing
+network architectures with additional features such as Frame-Differencing,
+histogram equalisation and the use of built-in Keras preprocessing libraries.
 
+To Run:
+
+Install relevant packages from the requirements.txt found in the root directory.
+
+Change paremeters in the file common.py to point to the data, determine the number of classes,
+image size etc that are required for the data. Change some paremeters and run the Master.py file in the root directory,
+ this will train all models and create relevant output files. Other functionalities such as bayesian optimisation,
+ image size comparison etc. can be toggled in the Master file also.
 
 
 
